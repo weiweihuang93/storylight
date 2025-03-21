@@ -1,4 +1,5 @@
-import { NavLink, Outlet } from 'react-router';
+import { useState, useEffect } from "react";
+import { Link, NavLink, Outlet } from "react-router";
 
 const Routes = [
   // {path: "/", name: "首頁"},
@@ -9,6 +10,76 @@ const Routes = [
 ]
 
 export default function FrontLayout() {
+  const [isMemberbarOpen, setIsMemberbarOpen] = useState(true);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // 監聽視窗尺寸變化並更新折疊選單的狀態
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 992) {
+        setIsMemberbarOpen(true);
+      } else {
+        const navbarCollapse = document.getElementById("navbarCollapse");
+        if (navbarCollapse && navbarCollapse.classList.contains("show")) {
+          setIsMemberbarOpen(false);
+        }
+      }
+    };
+
+    // 初始化時呼叫一次
+    handleResize();
+
+    // 監聽視窗大小變化
+    window.addEventListener('resize', handleResize);
+
+    // 清理事件監聽
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+    }, []);
+
+  // MemberbarOpen
+  useEffect(() => {
+    const navbarCollapse = document.getElementById("navbarCollapse");
+    if (!navbarCollapse) return;
+
+    const handleShow = () => setIsMemberbarOpen(false);
+    const handleHide = () => {
+      setTimeout(() => {
+        setIsMemberbarOpen(true)
+      }, 500)
+    };
+
+    navbarCollapse.addEventListener("show.bs.collapse", handleShow);
+    navbarCollapse.addEventListener("hide.bs.collapse", handleHide);
+
+    return () => {
+      // 移除監聽器，避免內存洩漏
+      navbarCollapse.removeEventListener("show.bs.collapse", handleShow);
+      navbarCollapse.removeEventListener("hide.bs.collapse", handleHide);
+    };
+  }, []);
+
+  // SearchOpen
+  useEffect(() => {
+    const searchIconLink = document.querySelector(".searchiconlink");
+    
+    const handleSearchClick = (e) => {
+      e.preventDefault();
+      setIsSearchOpen((prev) => !prev); // **正確切換狀態**
+    };
+  
+    if (searchIconLink) {
+      searchIconLink.addEventListener("click", handleSearchClick);
+    }
+
+    return () => {
+      if (searchIconLink) {
+        searchIconLink.removeEventListener("click", handleSearchClick);
+      }
+    };
+  }, []);
+  
   return (
     <>
     <section className="section-promotion bg">
@@ -38,7 +109,7 @@ export default function FrontLayout() {
             <button className="d-lg-none btn btn-orange btn-md-sm">登入 / 註冊</button>
           </ul>
         </div>
-        <div className="memberbar">
+        <div className={`memberbar ${isMemberbarOpen ? "d-block" : "d-none"}`}>
           <ul className="d-flex gap-3">
             <li>
               <a href="#"><span className="material-symbols-outlined icon-black searchiconlink"> search </span></a>
@@ -55,12 +126,12 @@ export default function FrontLayout() {
     </nav>
 
     {/* <!-- 搜尋框 (預設隱藏) --> */}
-    {/* <form className="form-search m-3" role="search" >
+    <form className={`form-search m-3 ${isSearchOpen ? "d-block" : "d-none"}`} role="search" >
       <input className="input-search form-control form-control-input" type="search" placeholder="搜尋" aria-label="Search" />
       <a className="a-search" type="button" href="#">
         <span className="material-symbols-outlined"> search </span>
       </a>
-    </form> */}
+    </form>
 
     <Outlet />
 
