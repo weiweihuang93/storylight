@@ -1,0 +1,17 @@
+.section-login {
+  .bg {
+    background-color: $secondary-600;
+  }
+  .container-lg {
+    max-width: 992px;
+  }
+  .login-img,
+  .login-info {
+    height: 650px;
+    overflow: hidden;
+  }
+
+  .login-info.bg {
+    background-color: white;
+  }
+}

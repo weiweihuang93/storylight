@@ -5,6 +5,8 @@ import CategoryPage from "../front/CategoryPage";
 import ProductPage from "../front/ProductPage";
 import WishPage from "../front/WishPage";
 import HelpPage from "../front/HelpPage";
+import Login from "../front/Login";
+import Register from "../front/Register";
 
 const routes = [
   {
@@ -19,7 +21,9 @@ const routes = [
       { path: 'wish', element: <WishPage /> },
       { path: 'help', element: <HelpPage /> },
     ]
-  }
+  },
+  { path: '/login', element: <Login /> },
+  { path: '/register', element: <Register /> },
 ];
 
 export default routes;
