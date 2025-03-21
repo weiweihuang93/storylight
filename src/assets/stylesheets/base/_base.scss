@@ -1,0 +1,180 @@
+.f-poppins{
+  font-family: "Poppins";
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p{
+    letter-spacing: 0.1em;
+    margin: 0;
+    padding: 0;
+}
+ul, ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+a{
+  text-decoration: none;
+  display: inline-block;
+}
+
+.material-symbols-outlined {
+  color: inherit;
+  line-height: 1.5;
+  font-variation-settings:
+    'FILL' 0;
+
+  &:hover{
+    color: $orange;
+  }
+
+  &.icon-fill{
+    font-variation-settings: 'FILL' 1;
+    color: $orange
+  }
+}
+
+.icon-black{
+  color: black;
+}
+.icon-gray{
+  color: gray;
+}
+
+// btn
+.btn-orange{
+  background-color: $orange;
+  color: $white;
+  
+  &:hover{
+    background-color: $orange-dark;
+    color: $white;
+  }
+}
+
+.btn-xs{
+  padding: 0px 8px;
+}
+
+.text-sm{
+  font-size: 14px;
+}
+
+.title-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* 限制最多 2 行 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  // max-height: 3em; /* 視字體大小調整 */
+  // height: 48px;
+}
+.h-3em{
+  height: 48px;
+}
+
+
+@media (max-width: 576px) {
+  .text-wrap-sm{
+    white-space: normal;
+  };
+}
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background-color: rgba(255, 255, 255, 0.8); /* 半透明白色背景 */
+
+  &:hover {
+    background-color: white;
+  }
+}
+
+.navbar .nav-link{
+  color: black;
+  font-weight: $font-weight-semibold;
+
+  &:hover{
+    color: $orange-dark;
+  }
+  &.active{
+    color: $orange-dark;
+  }
+}
+
+// .orange-link{
+//   color: black;
+//   font-weight: $font-weight-semibold;
+// }
+// .orange-link:hover{
+//   // background-color: $orange;
+//   color: $orange-dark;
+// }
+// .orange-link.active{
+//   // background-color: $orange;
+//   // color: white;
+//   color: $orange-dark;
+// }
+
+.orange-bg-link{
+  font-weight: $font-weight-semibold;
+}
+.orange-bg-link:hover{
+  color: white;
+}
+
+// .table-responsive {
+//   overflow-x: auto !important;
+//   width: 100%;
+//   display: block; /* 確保區塊屬性 */
+// }
+
+table {
+  width: 100%;
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.logo{
+  max-width: 100px;
+}
+
+.breadcrumb-item{
+  font-weight: $font-weight-semibold;
+}
+.breadcrumb-item.active{
+  font-weight: $font-weight-bold;
+}
+
+@media (min-width: 993px) {
+  .border-lg-end{
+    border-right: 1px solid #dee2e6;
+  }
+}
+
+// 斷行
+.text-pre-line {
+  white-space: pre-line;
+}
+
+.bonus-product {
+  border: 2px solid #ff9800;
+  background-color: #fff3e0; 
+  .product-img img {
+    opacity: 0.8;
+  }
+}
+
+@media (min-width: 992px) {
+  .w-lg-50 {
+    width: 50%;
+  }
+}
