@@ -1,5 +1,6 @@
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { AppContext } from "../context/AppContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -8,23 +9,26 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
+import { Link } from "react-router";
 
 export default function HomePage(){
 
   const [products, setProducts] = useState([]);
   const [bonusProducts, setBonusProducts] = useState([]);
   const [favorite, setFavorite] = useState({});
+  const { cartData, setCartData } = useContext(AppContext);
 
   useEffect(() => {
     getAllProduct();
     getBonusProduct();
+    getCart();
   }, []);
 
   const getAllProduct = async() => {
     try{
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products/all`);
       // console.log('getAllProduct', res);
-      const filterProducts = res.data.products.filter(product => product.category !== "滿額索取");
+      const filterProducts = res.data.products.filter(product => product.category !== "滿額索取" && product.category !== "運費專區");
       // console.log(filterProducts)
       // setProducts(res.data.products);
       const filter10Products = filterProducts.slice(0, 10); // 只取前 10 筆資料
@@ -64,8 +68,20 @@ export default function HomePage(){
         }
       });
       // console.log('addCart', res);
+      getCart();
     }catch(err){
       console.log(err);
+    }
+  };
+
+  const getCart = async() => {
+    try{
+      const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/cart`);
+      // console.log(res.data.data.carts);
+      // console.log('getCart', res);
+      setCartData(res.data.data);
+    }catch(err){
+      // console.log(err);
     }
   };
 
@@ -95,34 +111,42 @@ export default function HomePage(){
         <div className="container">
           <div className="row row-cols-lg-2 row-cols-1 gy-3">
             <div className="col">
-              <a className="option-wrap rounded">
-                <div className="option-info p-5">
-                  <h2>
-                    我要買書 
-                  </h2>
-                  <p className="text-muted">超過 10,000 本優質二手書，輕鬆找到你的愛書！</p>
-                  <button className="btn btn-orange btn-lg">立即選購</button>
+              <Link to="/category" className="option-card rounded">
+                <div className="option-card-inner">
+                  {/* 前面 */}
+                  <div className="option-card-front rounded">
+                    <h2 className="text-black mb-3">我要買書</h2>
+                    <p className="text-muted mb-3">
+                      超過10,000 本精選書籍，輕鬆找到愛書！
+                    </p>
+                    <button className="btn btn-orange">立即選購</button>
+                  </div>
+                  {/* 背面 */}
+                  <div className="option-card-back rounded">
+                    <span className="material-symbols-outlined fs-1">shopping_cart</span>
+                    <h2>立即選購</h2>
+                  </div>
                 </div>
-                <div className="option-hover rounded">
-                  <span className="fs-2 material-symbols-outlined text-white">shopping_cart</span>
-                  <h2>立即選購</h2>
-                </div>
-              </a>
+              </Link>
             </div>
             <div className="col">
-              <a className="option-wrap rounded">
-                <div className="option-info p-5">
-                  <h2>
-                    我要徵求
-                  </h2>
-                  <p className="text-muted">找不到想要的嗎？填寫表單，讓賣家主動聯繫你！</p>
-                  <button className="btn btn-orange btn-lg">立即徵求</button>
+              <Link to="/wish" className="option-card rounded">
+                <div className="option-card-inner">
+                  {/* 前面 */}
+                  <div className="option-card-front rounded">
+                    <h2 className="text-black mb-3">我要徵求</h2>
+                    <p className="text-muted mb-3">
+                      找不到想要的嗎？填寫表單，讓賣家聯繫你！
+                    </p>
+                    <button className="btn btn-orange">立即徵求</button>
+                  </div>
+                  {/* 背面 */}
+                  <div className="option-card-back rounded">
+                    <span className="material-symbols-outlined fs-1">assignment</span>
+                    <h2>立即徵求</h2>
+                  </div>
                 </div>
-                <div className="option-hover rounded">
-                  <span className="fs-2 material-symbols-outlined text-white">assignment</span>
-                  <h2>立即徵求</h2>
-                </div>
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -130,106 +154,94 @@ export default function HomePage(){
     </section>
 
     {/* <!-- 書籍分類 8大分類區 --> */}
-    <section className="section-category">
+    <div className="section-category">
       <div className="container py-lg-6 py-5">
-        <h2 className="text-center mb-lg-5 mb-4">書籍分類</h2>
-        <div className="row row-cols-lg-4 row-cols-md-2 row-cols-1 gy-3">
+        <div className="text-center">
+          <h2 className="title-decoration mb-lg-5 mb-4">書籍分類</h2>
+        </div>
+        <div className="row row-cols-3 g-3">
           <div className="col">
-            <div className="category-card">
-              <a href="#">
-                <picture>
-                  <source media="(min-width: 992px)" srcSet="./images/category-a2.png" />
-                  <img src="./images/category-a1.png" alt="category-a1" />
-                </picture>
-              </a>
-              <h4>兒童繪本</h4>
-            </div>
+            <Link to="/category/親子童書" className="category-card border rounded text-center px-3 py-4">
+              <span className="material-symbols-outlined fs-1">
+                nature_people
+              </span>
+              <h4 className="category-title">親子 / 童書</h4>
+            </Link>
           </div>
           <div className="col">
-            <div className="category-card">
-              <a href="#">
-                <picture>
-                  <source media="(min-width: 992px)" srcSet="./images/category-b2.png" />
-                  <img src="./images/category-b1.png" alt="category-b1" />
-                </picture>
-              </a>
-              <h4>商業理財</h4>
-            </div>
+            <Link to="/category/商業理財" className="category-card border rounded text-center px-3 py-4">
+              <span className="material-symbols-outlined fs-1">
+                query_stats
+              </span>
+              <h4 className="category-title">商業 / 理財</h4>
+            </Link>
           </div>
           <div className="col">
-            <div className="category-card">
-              <a href="#">
-                <picture>
-                  <source media="(min-width: 992px)" srcSet="./images/category-c2.png" />
-                  <img src="./images/category-c1.png" alt="category-c1" />
-                </picture>
-              </a>
-              <h4>藝術設計</h4>
-            </div>
+            <Link to="/category/藝術音樂" className="category-card border rounded text-center px-3 py-4">
+              <span className="material-symbols-outlined fs-1">
+                palette
+              </span>
+              <h4 className="category-title">藝術 / 音樂</h4>
+            </Link>
           </div>
           <div className="col">
-            <div className="category-card">
-              <a href="#">
-                <picture>
-                  <source media="(min-width: 992px)" srcSet="./images/category-d2.png" />
-                  <img src="./images/category-d1.png" alt="category-d1" />
-                </picture>
-              </a>
-              <h4>科學自然</h4>
-            </div>
+            <Link to="/category/人文科普" className="category-card border rounded text-center px-3 py-4">
+              <span className="material-symbols-outlined fs-1">
+                wb_sunny
+              </span>
+              <h4 className="category-title">人文 / 科普</h4>
+            </Link>
           </div>
           <div className="col">
-            <div className="category-card">
-              <a href="#">
-                <picture>
-                  <source media="(min-width: 992px)" srcSet="./images/category-e2.png" />
-                  <img src="./images/category-e1.png" alt="category-e1" />
-                </picture>
-              </a>
-              <h4>人文歷史</h4>
-            </div>
+            <Link to="/category/心理勵志" className="category-card border rounded text-center px-3 py-4">
+              <span className="material-symbols-outlined fs-1">
+                favorite
+              </span>
+              <h4 className="category-title">心理 / 勵志</h4>
+            </Link>
           </div>
           <div className="col">
-            <div className="category-card">
-              <a href="#">
-                <picture>
-                  <source media="(min-width: 992px)" srcSet="./images/category-f2.png" />
-                  <img src="./images/category-f1.png" alt="category-f1" />
-                </picture>
-              </a>
-              <h4>宗教命理</h4>
-            </div>
+            <Link to="/category/生活休閒" className="category-card border rounded text-center px-3 py-4">
+              <span className="material-symbols-outlined fs-1">
+                sports_martial_arts
+              </span>
+              <h4 className="category-title">生活 / 休閒</h4>
+            </Link>
           </div>
           <div className="col">
-            <div className="category-card">
-              <a href="#">
-                <picture>
-                  <source media="(min-width: 992px)" srcSet="./images/category-g2.png" />
-                  <img src="./images/category-g1.png" alt="category-g1" />
-                </picture>
-              </a>
-              <h4>大眾閱讀</h4>
-            </div>
+            <Link to="/category/文學小說" className="category-card border rounded text-center px-3 py-4">
+              <span className="material-symbols-outlined fs-1">
+                history_edu
+              </span>
+              <h4 className="category-title">文學 / 小說</h4>
+            </Link>
           </div>
           <div className="col">
-            <div className="category-card">
-              <a href="#">
-                <picture>
-                  <source media="(min-width: 992px)" srcSet="./images/category-h2.png" />
-                  <img src="./images/category-h1.png" alt="category-h1" />
-                </picture>
-              </a>
-              <h4>工具學習</h4>
-            </div>
+            <Link to="/category/工具學習" className="category-card border rounded text-center px-3 py-4">
+              <span className="material-symbols-outlined fs-1">
+                book_3
+              </span>
+              <h4 className="category-title">工具 / 學習</h4>
+            </Link>
+          </div>
+          <div className="col">
+            <Link to="/category" className="category-card border rounded text-center px-3 py-4">
+              <span className="material-symbols-outlined fs-1">
+                more_horiz
+              </span>
+              <h4 className="category-title">查看更多</h4>
+            </Link>
           </div>
         </div>
       </div>
-    </section>
+    </div>
 
     {/* <!-- 新書上架 --> */}
     <section className="section-product">
       <div className="container py-lg-6 py-5">
-        <h2 className="mb-lg-5 mb-4">新書上架</h2>
+        <div className="text-center">
+          <h2 className="title-decoration mb-lg-5 mb-4">新書上架</h2>
+        </div>
         <Swiper
           slidesPerView={1}
           spaceBetween={20}
@@ -243,7 +255,11 @@ export default function HomePage(){
           }}
           className="swiper"
         >
-          {products.map((product) => (
+          {products.map((product) => {
+
+            const isInCart = cartData?.carts?.some((item) => item.product_id === product.id);
+
+            return(
             <SwiperSlide key={product.id}>
               <div className="product-card">
                 <div className="product-img-h22">
@@ -267,13 +283,14 @@ export default function HomePage(){
                     </p>
                   </div>
                 </ul>
-                <button className="btn btn-orange-dark w-100 mb-2" type="button" >繼續閱讀</button>
-                <button onClick={() => addCart(product.id)}className="btn btn-warning w-100" type="button">
-                  加入購物車
+                <Link className="btn btn-orange-dark w-100 mb-2" type="button" to={`/category/${product.category}/${product.id}`}>繼續閱讀</Link>
+                <button onClick={() => addCart(product.id)} className={`btn w-100 mt-auto ${isInCart ? "btn-gray-600" : " btn-warning"}`} type="button" disabled={isInCart}>
+                  {isInCart ? "已加入購物車" : "加入購物車"}
                 </button>
               </div>
             </SwiperSlide>
-          ))}
+          )
+          })}
         </Swiper>
       </div>
     </section>
@@ -281,7 +298,9 @@ export default function HomePage(){
     {/* <!-- 滿額索取 --> */}
     <section className="section-bonusproduct">
       <div className="container py-lg-6 py-5">
-        <h2 className="mb-lg-5 mb-4">新書上架</h2>
+        <div className="text-center">
+          <h2 className="title-decoration mb-lg-5 mb-4">滿額索取</h2>
+        </div>
         <Swiper
           slidesPerView={1}
           spaceBetween={20}
@@ -295,7 +314,11 @@ export default function HomePage(){
           }}
           className="swiper"
         >
-          {bonusProducts.map((product) => (
+          {bonusProducts.map((product) => {
+
+            const isInCart = cartData?.carts?.some((item) => item.product_id === product.id);
+
+            return(
             <SwiperSlide key={product.id}>
               <div className="product-card bonus-wrap">
                 <div className="product-img-h22">
@@ -319,13 +342,14 @@ export default function HomePage(){
                     </p>
                   </div>
                 </ul>
-                <button className="btn btn-orange-dark w-100 mb-2" type="button" >繼續閱讀</button>
-                <button onClick={() => addCart(product.id)} className="btn btn-warning w-100" type="button">
-                  加入購物車
+                <Link className="btn btn-orange-dark w-100 mb-2" type="button" to={`/category/${product.category}/${product.id}`}>繼續閱讀</Link>
+                <button onClick={() => addCart(product.id)} className={`btn w-100 mt-auto ${isInCart ? "btn-gray-600" : " btn-warning"}`} type="button" disabled={isInCart}>
+                  {isInCart ? "已加入購物車" : "加入購物車"}
                 </button>
               </div>
             </SwiperSlide>
-          ))}
+          )
+          })}
         </Swiper>
       </div>
     </section>
@@ -345,7 +369,7 @@ export default function HomePage(){
             </ul> 
             <img className="membership-img1 d-none d-lg-block" src="https://opendoodles.s3-us-west-1.amazonaws.com/reading-side.svg" alt="membership-img1" />
             <img className="membership-img2 d-none d-lg-block" src="https://opendoodles.s3-us-west-1.amazonaws.com/sitting-reading.svg" alt="membership-img2" />
-            <button className="btn btn-orange btn-lg mt-5">立即加入，開啟你的專屬閱讀旅程！</button>
+            <Link to="/register" className="btn btn-orange btn-lg mt-5">立即加入，開啟你的專屬閱讀旅程！</Link>
           </div>
         </div>
       </div>
@@ -354,7 +378,9 @@ export default function HomePage(){
     {/* <!-- 店家介紹 --> */}
     <section className="section-about">
       <div className="container text-center py-lg-6 py-5">
-        <h2 className="mb-lg-5 mb-4">關於我們｜書籍如何處理？</h2>
+        <div className="text-center">
+          <h2 className="title-decoration mb-lg-5 mb-4">關於我們｜書籍如何處理？</h2>
+        </div>
         <p className="fs-5 text-muted mb-5">我們細心處理每一本書，<span className="d-block d-lg-inline">確保你收到的書籍乾淨、完整！</span></p>
 
         <div className="row row-cols-lg-4 row-cols-sm-2 row-cols-1 g-3">
@@ -500,7 +526,7 @@ export default function HomePage(){
             </div>
           </div>
           <div className="d-flex justify-content-center">
-            <button className="btn btn-orange">查看更多FAQ</button>
+            <Link to="/help" className="btn btn-orange">查看更多FAQ</Link>
           </div>
         </div>
       </div>

@@ -28,78 +28,71 @@
     background-color: $secondary-500;
   }
 
-  .option-wrap {
-    display: block;
-    text-align: center;
+  .option-card {
     background-color: white;
-    color: black;
-    box-shadow: $box-shadow-sm;
+    box-shadow: $box-shadow;
+    display: block;
+    perspective: 1000px; // 讓翻轉更具 3D 效果
+    width: 100%;
+    height: 300px;
+  }
+  
+  .option-card-inner {
     position: relative;
-  }
-  .option-wrap:hover {
-    .option-hover {
-      opacity: 1;
-    }
-  }
-  .option-hover {
-    background-color: $orange;
-    color: white;
-    position: absolute;
-    top: 0;
-    left: 0;
-    opacity: 0;
     width: 100%;
     height: 100%;
-    transition: opacity 0.3s ease, visibility 0.3s ease; /* 平滑过渡 */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 1rem;
-    font-weight: $font-weight-bold;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
   }
-  .option-info {
+  
+  .option-card:hover{
+    .option-card-inner {
+      transform: rotateY(180deg);
+    }
+  }
+  
+  // 正面設計
+  .option-card-front,
+  .option-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
     align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  
+  // 背面設計
+  .option-card-back {
+    background-color: $orange-dark;
+    color: white;
+    transform: rotateY(180deg);
   }
 }
 
 // 書籍分類
 .section-category {
-  .category-card {
-    position: relative;
-    overflow: hidden;
-    border-radius: 20px 0;
-    color: white;
-  }
-  
-  .category-card::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* 黑色半透明遮罩 */
-    z-index: 1;
-  }
-  
-  .category-card img {
-    width: 100%;
-    object-fit: cover;
-  }
-  
-  .category-card h4 {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 2;
-  }
-  
-  .category-card a {
+  .category-card{
     display: block;
+    color: black;
+  }
+  .category-card:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    background-color: $orange;
+    color:white;
+
+    .material-symbols-outlined {
+      color: white;
+    }
+}
+
+  @media (max-width: 992px) {
+    .category-title{
+      font-size: 1rem;
+    }
   }
 }
 
@@ -107,7 +100,6 @@
 // 滿額索取
 .section-product,
 .section-bonusproduct {
-  text-align: center;
 
   .product-card {
     overflow: hidden;
@@ -122,6 +114,9 @@
   // 限制高度
   .product-img-h22 {
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     height: 220px;
     
     img {
