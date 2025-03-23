@@ -1,16 +1,18 @@
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link, NavLink, useParams } from "react-router";
+import { AppContext } from "../context/AppContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
 
-const categories = ["全部商品", "兒童繪本", "商業理財", "藝術設計", "科學自然", "人文歷史", "宗教命理", "大眾文學", "工具學習", "滿額索取"];
+const categories = ["全部商品", "親子童書", "商業理財", "藝術音樂", "人文科普", "心理勵志", "生活休閒", "文學小說", "工具學習", "滿額索取"];
 
 export default function CategoryPage(){
   const { categoryName } = useParams();
   const [products, setProducts] = useState([]);
   const [favorite, setFavorite] = useState({});
+  const { cartData, setCartData } = useContext(AppContext);
 
   const handleFavorite = (productId) => {
     setFavorite((prevState) => ({
@@ -31,7 +33,8 @@ export default function CategoryPage(){
     try {
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products/all`);
       // console.log('getAllProduct', res);
-      setProducts(res.data.products);
+      const filterProducts = res.data.products.filter(product => product.category !== "運費專區");
+      setProducts(filterProducts);
     } catch (err) {
       console.log(err);
     }
@@ -48,17 +51,29 @@ export default function CategoryPage(){
     }
   };
 
-  const addCart = async (product_id) => {
-    try {
+  const addCart = async(product_id) => {
+    try{
       const res = await axios.post(`${BASE_URL}/v2/api/${API_PATH}/cart`, {
-        data: {
-          product_id,
-          qty: 1,
-        },
+        "data": {
+          "product_id": product_id,
+          "qty": 1
+        }
       });
-      // console.log(res);
-    } catch (err) {
+      // console.log('addCart', res);
+      getCart();
+    }catch(err){
       console.log(err);
+    }
+  };
+
+  const getCart = async() => {
+    try{
+      const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/cart`);
+      // console.log(res.data.data.carts);
+      // console.log('getCart', res);
+      setCartData(res.data.data)
+    }catch(err){
+      // console.log(err);
     }
   };
 
@@ -113,7 +128,11 @@ export default function CategoryPage(){
                 </ol>
               </nav>
 
-              {products.map((product) => (
+              {products.map((product) => {
+
+                const isInCart = cartData?.carts?.some((item) => item.product_id === product.id);
+
+                return(
                 <div 
                 className={`product-card mb-3 ${product.category === "滿額索取" ? "bonus-wrap" : ""}`} 
                 key={product.id}
@@ -142,12 +161,14 @@ export default function CategoryPage(){
                           <li>適讀對象：{product.suitable}</li>
                           <div className="product-price mb-2">
                             <del className="text-sm me-3">售價：{product.origin_price}</del>
-                            <p class="fs-5 text-danger fw-bold">
-                              <span class="material-symbols-outlined text-primary me-2">paid</span>{product.price}
+                            <p className="fs-5 text-danger fw-bold">
+                              <span className="material-symbols-outlined text-primary me-2">paid</span>{product.price}
                             </p>
                           </div>
                         </ul>
-                        <button onClick={() => addCart(product.id)} className="btn btn-warning w-100" type="button" aria-label="加入購物車">加入購物車</button>
+                        <button onClick={() => addCart(product.id)} className={`btn w-100 mt-auto ${isInCart ? "btn-gray-600" : " btn-warning"}`} type="button" disabled={isInCart}>
+                          {isInCart ? "已加入購物車" : "加入購物車"}
+                        </button>
                       </div>
                     </div>
 
@@ -166,7 +187,8 @@ export default function CategoryPage(){
                     </div>
                   </div>
                 </div>
-              ))}
+              )
+              })}
             </div>
           </div>
         </div>

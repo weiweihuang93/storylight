@@ -21,7 +21,7 @@ export default function Login(){
   useEffect(() => {
     if(login){
       alert("登入成功");
-      // navigate("/cart");
+      navigate("/cart");
     }
   }, [login]);
 

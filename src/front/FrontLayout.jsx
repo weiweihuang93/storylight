@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link, NavLink, Outlet } from "react-router";
+import { AppContext } from "../context/AppContext";
 
 const Routes = [
   // {path: "/", name: "首頁"},
@@ -12,6 +13,14 @@ const Routes = [
 export default function FrontLayout() {
   const [isMemberbarOpen, setIsMemberbarOpen] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { cartData, shippingAdd, setShippingAdd } = useContext(AppContext);
+
+  useEffect(() => {
+    const isShippingInCart = cartData?.carts?.some((item) => item.product_id === "-OLDh-kx-_pNd2Ls902s");
+    if (isShippingInCart){
+      setShippingAdd(true);
+    }
+  }, [cartData, shippingAdd]);
 
   // 監聽視窗尺寸變化並更新折疊選單的狀態
   useEffect(() => {
@@ -79,7 +88,7 @@ export default function FrontLayout() {
       }
     };
   }, []);
-  
+
   return (
     <>
     <section className="section-promotion bg">
@@ -91,7 +100,7 @@ export default function FrontLayout() {
           <span className="navbar-toggler-icon"></span>
         </button>
       <div>
-        <a ><img className="logo" src="./images/logo.png" alt="logo" /></a>
+        <Link to="/"><img className="logo" src="./images/logo.png" alt="logo" /></Link>
       </div>
       <div className="collapse navbar-collapse justify-content-center" id="navbarCollapse">
         <form className="form-search d-lg-none d-md-flex m-3" role="search">
@@ -106,7 +115,7 @@ export default function FrontLayout() {
                 <NavLink className="nav-link py-2 px-4 w-100" aria-current="page" to={route.path} end>{route.name}</NavLink>
               </li>
             ))}
-            <button className="d-lg-none btn btn-orange btn-md-sm">登入 / 註冊</button>
+            <Link to="/login" className="d-lg-none btn btn-orange btn-md-sm">登入 / 註冊</Link>
           </ul>
         </div>
         <div className={`memberbar ${isMemberbarOpen ? "d-block" : "d-none"}`}>
@@ -115,10 +124,13 @@ export default function FrontLayout() {
               <a href="#"><span className="material-symbols-outlined icon-black searchiconlink"> search </span></a>
             </li>
             <li>
-              <a href=""><span className="material-symbols-outlined icon-black"> shopping_cart </span></a>
+             <Link to="/cart" className="icon-badge">
+              <span className="material-symbols-outlined icon-black"> shopping_cart </span>
+                <span className="badge bg-primary">{Math.max((cartData?.carts?.length || 0) - (shippingAdd ? 1 : 0), 0)}</span>
+             </Link>
             </li>
             <li>
-              <a href=""><span className="material-symbols-outlined icon-black"> person </span></a>
+              <Link to="/login"><span className="material-symbols-outlined icon-black"> person </span></Link>
             </li>
           </ul>
         </div>
@@ -133,13 +145,15 @@ export default function FrontLayout() {
       </a>
     </form>
 
-    <Outlet />
+    <main>
+      <Outlet />
+    </main>
 
     <footer>
       <div className="footer bg pt-4 pb-3">
         <div className="container">
-          <div className="footer-info-wrap mb-lg-5 mb-3">
-            <a href="#"><img className="logo" src="./images/logo.png" alt="logo" /></a>
+          <div className="footer-wrap mb-lg-5 mb-3">
+            <Link to="/"><img className="logo" src="./images/logo.png" alt="logo" /></Link>
             
             <div className="mb-3">
               <div className="d-flex justify-content-center gap-lg-7 gap-3 mb-3">
