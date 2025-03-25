@@ -138,7 +138,7 @@ export default function ProductPage(){
                 <li>規格：{product.size}</li>
               </ul>
             </div>
-            <div className="product-suitable">
+            <div className="product-condition mb-3">
               <h6 className="text-orange-dark mb-3">書況說明</h6>
               <ul>
                 <li className="fw-bold">我們的二手書均經過消毒清潔，並依據書籍狀況分類為：</li>
@@ -146,6 +146,12 @@ export default function ProductPage(){
                 <li>B：有使用痕跡，可能有自然泛黃、書斑、少量髒污，不影響閱讀。</li>
                 <li>C：可能含有筆記、劃線或重點標記。可能有書皮磨損、封面折痕、自然泛黃、書斑、髒污。但內容完整可讀。</li>
                 <li>D：可能年份較久遠，嚴重泛黃、書斑、髒污、封面或內頁磨損。</li>
+              </ul>
+            </div>
+            <div className="product-condition">
+              <h6 className="text-orange-dark mb-3">更多書況說明</h6>
+              <ul>
+                <li>{product.conditionDescription ? "" : "無"}</li>
               </ul>
             </div>
           </div>

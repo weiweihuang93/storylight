@@ -81,7 +81,7 @@ export default function CategoryPage(){
     <>
     <section className="section-product">
       <div className="bg py-3">
-        <div className="container-fluid">
+        <div className="container">
           <div className="row gy-3">
             <div className="col-lg-3">
               <h5 className="d-none d-lg-block bg-orange-dark text-white py-3 px-4">書籍分類</h5>
@@ -129,7 +129,6 @@ export default function CategoryPage(){
               </nav>
 
               {products.map((product) => {
-
                 const isInCart = cartData?.carts?.some((item) => item.product_id === product.id);
 
                 return(
@@ -138,7 +137,6 @@ export default function CategoryPage(){
                 key={product.id}
               >
                   <div className="row">
-                    {/* 產品圖片區 */}
                     <div className="col-5 col-lg-4">
                       <div className="product-img-h28">
                         <img src={product.imageUrl} alt={product.title} />
@@ -150,8 +148,7 @@ export default function CategoryPage(){
                         <p className="condition-tag">A</p>
                       </div>
                     </div>
-
-                    {/* 產品內容區 */}
+                    
                     <div className="col-7 col-lg-4 border-lg-end">
                       <div className="product-detail p-1">
                         <h5 className="title-clamp-2">{product.title}</h5>
@@ -166,16 +163,15 @@ export default function CategoryPage(){
                             </p>
                           </div>
                         </ul>
-                        <button onClick={() => addCart(product.id)} className={`btn w-100 mt-auto ${isInCart ? "btn-gray-600" : " btn-warning"}`} type="button" disabled={isInCart}>
+                        <button onClick={() => addCart(product.id)} className={`btn w-100 ${isInCart ? "btn-gray-600" : " btn-warning"}`} type="button" disabled={isInCart}>
                           {isInCart ? "已加入購物車" : "加入購物車"}
                         </button>
                       </div>
                     </div>
-
-                    {/* 產品描述區 */}
+                    
                     <div className="col-lg-4">
                       <div className="product-detail p-1 p-lg-1 p-3">
-                        <p className="text-pre-line">{product.content}...</p>
+                        <p className="line-clamp-lg-8 h-lg-12em text-pre-line">{product.content}...</p>
                         <Link
                           className="btn btn-outline-orange-dark w-100 mt-lg-0 mt-3"
                           type="button"

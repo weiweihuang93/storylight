@@ -66,24 +66,34 @@ a{
   font-size: 14px;
 }
 
+// 文字
 .title-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2; /* 限制最多 2 行 */
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  // max-height: 3em; /* 視字體大小調整 */
-  // height: 48px;
 }
 .h-3em{
   height: 48px;
 }
 
+@media (min-width: 993px) {
+  .line-clamp-lg-8 {
+    display: -webkit-box;
+    -webkit-line-clamp: 8;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .h-lg-12em{
+    height: 192px;
+  }
+}
 
-@media (max-width: 576px) {
-  .text-wrap-sm{
-    white-space: normal;
-  };
+// 斷行
+.text-pre-line {
+  white-space: pre-line;
 }
 
 .navbar {
@@ -113,44 +123,6 @@ a{
   color: white;
 }
 
-// .orange-link{
-//   color: black;
-//   font-weight: $font-weight-semibold;
-// }
-// .orange-link:hover{
-//   // background-color: $orange;
-//   color: $orange-dark;
-// }
-// .orange-link.active{
-//   // background-color: $orange;
-//   // color: white;
-//   color: $orange-dark;
-// }
-
-// .orange-bg-link{
-//   font-weight: $font-weight-semibold;
-// }
-// .orange-bg-link:hover{
-//   color: white;
-// }
-
-// .table-responsive {
-//   overflow-x: auto !important;
-//   width: 100%;
-//   display: block; /* 確保區塊屬性 */
-// }
-
-table {
-  width: 100%;
-  display: block;
-  overflow-x: auto;
-  white-space: nowrap;
-}
-
-.logo{
-  max-width: 100px;
-}
-
 .breadcrumb-item{
   font-weight: $font-weight-semibold;
 }
@@ -164,9 +136,8 @@ table {
   }
 }
 
-// 斷行
-.text-pre-line {
-  white-space: pre-line;
+.logo{
+  max-width: 100px;
 }
 
 .bonus-wrap {
@@ -177,7 +148,7 @@ table {
   }
 }
 
-@media (min-width: 992px) {
+@media (min-width: 993px) {
   .w-lg-50 {
     width: 50%;
   }
@@ -199,6 +170,14 @@ table {
   left: 0;
 }
 
-*{
-  // outline: 1px solid red
+// 分頁
+.pagination-container{
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 992px) {
+  .box-shadow-lg{
+    box-shadow: $box-shadow;
+  }
 }
