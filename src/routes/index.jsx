@@ -16,6 +16,7 @@ import AdminLayout from "../admin/AdminLayout";
 import AdminOrder from "../admin/AdminOrder";
 import AdminProduct from "../admin/AdminProduct";
 import AdminLogin from "../admin/AdminLogin";
+import NotFound from "../front/NotFound";
 
 const routes = [
   {
@@ -51,6 +52,7 @@ const routes = [
     ]
   },
   { path: '/adminlogin', element: <AdminLogin /> },
+  { path: "*", element: <NotFound /> }
 ];
 
 export default routes;
