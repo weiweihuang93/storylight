@@ -12,6 +12,10 @@ import CartPage from "../front_cart/CartPage";
 import OrderPage from "../front_cart/OrderPage";
 import PaymentPage from "../front_cart/PaymentPage";
 import CompletePage from "../front_cart/CompletePage";
+import AdminLayout from "../admin/AdminLayout";
+import AdminOrder from "../admin/AdminOrder";
+import AdminProduct from "../admin/AdminProduct";
+import AdminLogin from "../admin/AdminLogin";
 
 const routes = [
   {
@@ -38,6 +42,15 @@ const routes = [
   },
   { path: '/login', element: <Login /> },
   { path: '/register', element: <Register /> },
+  { 
+    path: '/admin',
+    element: <AdminLayout /> ,
+    children: [
+      { path: 'order', element: <AdminOrder /> },
+      { path: 'product', element: <AdminProduct /> },
+    ]
+  },
+  { path: '/adminlogin', element: <AdminLogin /> },
 ];
 
 export default routes;

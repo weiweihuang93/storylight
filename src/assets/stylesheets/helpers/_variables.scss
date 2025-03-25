@@ -926,10 +926,8 @@ $form-label-color:                      null !default;
 // scss-docs-end form-label-variables
 
 // scss-docs-start form-input-variables
-// $input-padding-y:                       $input-btn-padding-y !default;
-// $input-padding-x:                       $input-btn-padding-x !default;
-$input-padding-y:                       0.375rem !default; // 自定義
-$input-padding-x:                       1.5rem !default; // 自定義
+$input-padding-y:                       $input-btn-padding-y !default;
+$input-padding-x:                       $input-btn-padding-x !default;
 $input-font-family:                     $input-btn-font-family !default;
 $input-font-size:                       $input-btn-font-size !default;
 $input-font-weight:                     $font-weight-base !default;
