@@ -20,22 +20,28 @@ export default function Register(){
 
   return(
     <>
-    <main className="section-login">
-      <div className="bg vh-100">
-        <div className="container-lg">
-          <div className="mb-5 mb-lg-3">
-            <a href="#"><img className="logo" src="./images/logo.png" alt="logo" /></a>
-          </div>
-          <div className="row justify-content-center g-0">
+    <main className="login">
+      <div className="bg">
+        <div className="container py-2">
+
+          <div className="row justify-content-center g-lg-0">
+            {/* 左側登入圖片 */}
             <div className="col-lg-6 d-lg-block d-none">
               <div className="login-img p-0 border border-orange-dark rounded">
                 <img className="w-100 h-100" src="https://images.unsplash.com/photo-1576872381149-7847515ce5d8?q=80&w=2672&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="login-img" />
               </div>
             </div>
+
+            {/* 右側登入表單 */}
             <div className="col-lg-6">
-              <div className="login-info bg py-5 px-3 border border-orange-dark rounded">
+            <div className="login-form bg-white p-5 rounded border border-orange-dark rounded box-shadow-lg">
+                <div className="text-center mb-4">
+                  <Link className="text-secondary" to="/">
+                    <img className="logo mb-4" src="./images/logo.png" alt="logo" />
+                  </Link>
+                  <h4 className="text-orange-dark">會員註冊</h4>
+                </div>
                 <form onSubmit={handleSubmit(onSubmit)}>
-                <h4 className="text-orange-dark mb-4">會員註冊</h4>
                 <div className="mb-4">
                   <label htmlFor="name" className="form-label fw-bold mb-lg-2">會員帳號</label>
                   <input

@@ -1,17 +1,15 @@
-.section-login {
-  .bg {
+.login{
+  & .bg {
     background-color: $secondary-600;
-  }
-  .container-lg {
-    max-width: 992px;
-  }
-  .login-img,
-  .login-info {
-    height: 650px;
-    overflow: hidden;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
-  .login-info.bg {
-    background-color: white;
+  .login-img,
+  .login-form {
+    height: 660px;
+    overflow: hidden;
   }
 }
