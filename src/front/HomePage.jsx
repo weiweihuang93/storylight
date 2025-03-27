@@ -15,8 +15,7 @@ export default function HomePage(){
 
   const [products, setProducts] = useState([]);
   const [bonusProducts, setBonusProducts] = useState([]);
-  const [favorite, setFavorite] = useState({});
-  const { cartData, setCartData } = useContext(AppContext);
+  const { cartData, setCartData, favorites, toggleFavorite } = useContext(AppContext);
 
   useEffect(() => {
     getAllProduct();
@@ -50,13 +49,6 @@ export default function HomePage(){
     }catch(err){
       console.log(err);
     }
-  };
-
-  const handleFavorite = (productId) => {
-    setFavorite((prevState) => ({
-      ...prevState,
-      [productId]: !prevState[productId],
-    }))
   };
 
   const addCart = async(product_id) => {
@@ -116,8 +108,8 @@ export default function HomePage(){
                   {/* 前面 */}
                   <div className="option-card-front rounded">
                     <h2 className="text-black mb-3">我要買書</h2>
-                    <p className="text-muted mb-3">
-                      超過10,000 本精選書籍，輕鬆找到愛書！
+                    <p className="text-muted text-center mb-3">
+                    精選書籍任你挑選，<span className="d-block d-md-inline">輕鬆找到愛書！</span>
                     </p>
                     <button className="btn btn-orange">立即選購</button>
                   </div>
@@ -135,8 +127,8 @@ export default function HomePage(){
                   {/* 前面 */}
                   <div className="option-card-front rounded">
                     <h2 className="text-black mb-3">我要徵求</h2>
-                    <p className="text-muted mb-3">
-                      找不到想要的嗎？填寫表單，讓賣家聯繫你！
+                    <p className="text-muted text-center mb-3">
+                      找不到想要的嗎？<span className="d-block d-md-inline">填寫表單，讓賣家聯繫你！</span>
                     </p>
                     <button className="btn btn-orange">立即徵求</button>
                   </div>
@@ -154,7 +146,7 @@ export default function HomePage(){
     </section>
 
     {/* <!-- 書籍分類 8大分類區 --> */}
-    <div className="section-category">
+    <section className="section-category">
       <div className="container py-lg-6 py-5">
         <div className="text-center">
           <h2 className="title-decoration mb-lg-5 mb-4">書籍分類</h2>
@@ -165,7 +157,7 @@ export default function HomePage(){
               <span className="material-symbols-outlined fs-1">
                 nature_people
               </span>
-              <h4 className="category-title">親子 / 童書</h4>
+              <h4 className="category-title">親子童書</h4>
             </Link>
           </div>
           <div className="col">
@@ -173,7 +165,7 @@ export default function HomePage(){
               <span className="material-symbols-outlined fs-1">
                 query_stats
               </span>
-              <h4 className="category-title">商業 / 理財</h4>
+              <h4 className="category-title">商業理財</h4>
             </Link>
           </div>
           <div className="col">
@@ -181,7 +173,7 @@ export default function HomePage(){
               <span className="material-symbols-outlined fs-1">
                 palette
               </span>
-              <h4 className="category-title">藝術 / 音樂</h4>
+              <h4 className="category-title">藝術音樂</h4>
             </Link>
           </div>
           <div className="col">
@@ -189,7 +181,7 @@ export default function HomePage(){
               <span className="material-symbols-outlined fs-1">
                 wb_sunny
               </span>
-              <h4 className="category-title">人文 / 科普</h4>
+              <h4 className="category-title">人文科普</h4>
             </Link>
           </div>
           <div className="col">
@@ -197,7 +189,7 @@ export default function HomePage(){
               <span className="material-symbols-outlined fs-1">
                 favorite
               </span>
-              <h4 className="category-title">心理 / 勵志</h4>
+              <h4 className="category-title">心理勵志</h4>
             </Link>
           </div>
           <div className="col">
@@ -205,7 +197,7 @@ export default function HomePage(){
               <span className="material-symbols-outlined fs-1">
                 sports_martial_arts
               </span>
-              <h4 className="category-title">生活 / 休閒</h4>
+              <h4 className="category-title">生活休閒</h4>
             </Link>
           </div>
           <div className="col">
@@ -213,7 +205,7 @@ export default function HomePage(){
               <span className="material-symbols-outlined fs-1">
                 history_edu
               </span>
-              <h4 className="category-title">文學 / 小說</h4>
+              <h4 className="category-title">文學小說</h4>
             </Link>
           </div>
           <div className="col">
@@ -221,7 +213,7 @@ export default function HomePage(){
               <span className="material-symbols-outlined fs-1">
                 book_3
               </span>
-              <h4 className="category-title">工具 / 學習</h4>
+              <h4 className="category-title">工具學習</h4>
             </Link>
           </div>
           <div className="col">
@@ -234,7 +226,7 @@ export default function HomePage(){
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
     {/* <!-- 新書上架 --> */}
     <section className="section-product">
@@ -264,8 +256,8 @@ export default function HomePage(){
               <div className="product-card">
                 <div className="product-img-h22">
                   <img src={product.imageUrl} alt={product.title} />
-                  <button onClick={() => handleFavorite(product.id)} className={`favorite-btn ${favorite[product.id] ? "active" : ""}`}>
-                    <span className={`material-symbols-outlined ${favorite[product.id] ? "icon-fill" : ""}`}>
+                  <button onClick={() => toggleFavorite(product.id)} className={`favorite-btn ${favorites[product.id] ? "active" : ""}`}>
+                    <span className={`material-symbols-outlined ${favorites[product.id] ? "icon-fill" : ""}`}>
                     favorite
                     </span>
                   </button>
@@ -323,8 +315,8 @@ export default function HomePage(){
               <div className="product-card bonus-wrap">
                 <div className="product-img-h22">
                   <img src={product.imageUrl} alt={product.title} />
-                  <button onClick={() => handleFavorite(product.id)} className={`favorite-btn ${favorite[product.id] ? "active" : ""}`}>
-                    <span className={`material-symbols-outlined ${favorite[product.id] ? "icon-fill" : ""}`}>
+                  <button onClick={() => toggleFavorite(product.id)} className={`favorite-btn ${favorites[product.id] ? "active" : ""}`}>
+                    <span className={`material-symbols-outlined ${favorites[product.id] ? "icon-fill" : ""}`}>
                     favorite
                     </span>
                   </button>
@@ -361,11 +353,11 @@ export default function HomePage(){
           <div className="membership-wrap">
             <h2 className="text-center mb-lg-5 mb-4">\ 專屬會員限定優惠 /</h2>
             <ul>
-              <li><span className="material-symbols-outlined icon-fill"> check_circle </span>會員積分回饋（每消費 1 元累積 1 點）。</li>
-              <li><span className="material-symbols-outlined icon-fill"> check_circle </span>輕鬆尋找心儀好書，讓好書輕鬆入手！</li>
-              <li><span className="material-symbols-outlined icon-fill"> check_circle </span>專屬優惠券，不定期折扣，讓你以更優惠的價格收藏好書。</li>
-              <li><span className="material-symbols-outlined icon-fill"> check_circle </span>年度精選禮物，每年為忠實會員準備一份特別的閱讀驚喜！</li>
-              <li><span className="material-symbols-outlined icon-fill"> check_circle </span>購物滿額可免費索取好書，讓閱讀更超值！</li>
+              <li><span className="material-symbols-outlined icon-fill"> check_circle </span>會員積分回饋（每消費 1 元累積 1 點），積分可用於折扣或專屬優惠。</li>
+              <li><span className="material-symbols-outlined icon-fill"> check_circle </span>找不到想要的嗎？填寫徵求表單，告訴我們您的需求，讓好書輕鬆入手！</li>
+              <li><span className="material-symbols-outlined icon-fill"> check_circle </span>定期發放專屬優惠券和折扣活動，讓你以更優惠的價格收藏好書。</li>
+              <li><span className="material-symbols-outlined icon-fill"> check_circle </span>購物滿額，即可免費索取好書，輕鬆擁有更多好書！</li>
+              <li><span className="material-symbols-outlined icon-fill"> check_circle </span>提供專屬客服服務，解決您的問題，讓購書和閱讀更無後顧之憂。</li>
             </ul> 
             <img className="membership-img1 d-none d-lg-block" src="https://opendoodles.s3-us-west-1.amazonaws.com/reading-side.svg" alt="membership-img1" />
             <img className="membership-img2 d-none d-lg-block" src="https://opendoodles.s3-us-west-1.amazonaws.com/sitting-reading.svg" alt="membership-img2" />
@@ -390,8 +382,7 @@ export default function HomePage(){
                 <span className="material-symbols-outlined"> encrypted </span> 安心
               </h3>
               <p>
-                <span>每本書皆經過清潔與消毒，</span>
-                <span className="d-md-block d-xl-inline">閱讀無負擔。</span>
+                <span>每本書皆經過清潔與消毒，閱讀無負擔。</span>
               </p>
             </div>
           </div>
@@ -401,8 +392,7 @@ export default function HomePage(){
                 <span className="material-symbols-outlined"> book </span> 分級
               </h3>
               <p>
-                <span>書況分級標籤透明清楚，</span>
-                <span className="d-md-block d-xl-inline">讓你一目了然！</span>
+                <span>書況分級標籤透明清楚，讓你一目了然！</span>
               </p>
             </div>
           </div>
@@ -412,8 +402,7 @@ export default function HomePage(){
                 <span className="material-symbols-outlined"> public </span> 環保
               </h3>
               <p>
-                <span>採用環保包裝減少浪費，</span>
-                <span className="d-md-block d-xl-inline">共同愛護地球！</span>
+                <span>採用環保包裝減少浪費，共同愛護地球！</span>
               </p>
             </div>
           </div>
@@ -423,8 +412,7 @@ export default function HomePage(){
                 <span className="material-symbols-outlined"> delivery_truck_speed </span> 方便
               </h3>
               <p>
-                <span>下單快速出貨，讓你輕鬆買，</span>
-                <span className="d-md-block d-xl-inline">快速收書！</span>
+                <span>下單快速出貨，讓你輕鬆買，快速收書！</span>
               </p>
             </div>
           </div>

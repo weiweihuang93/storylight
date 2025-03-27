@@ -11,15 +11,7 @@ const categories = ["全部商品", "親子童書", "商業理財", "藝術音�
 export default function CategoryPage(){
   const { categoryName } = useParams();
   const [products, setProducts] = useState([]);
-  const [favorite, setFavorite] = useState({});
-  const { cartData, setCartData } = useContext(AppContext);
-
-  const handleFavorite = (productId) => {
-    setFavorite((prevState) => ({
-      ...prevState,
-      [productId]: !prevState[productId],
-    }));
-  };
+  const { cartData, setCartData, favorites, toggleFavorite } = useContext(AppContext);
 
   useEffect(() => {
     if (!categoryName || categoryName === "全部商品") {
@@ -140,8 +132,8 @@ export default function CategoryPage(){
                     <div className="col-5 col-lg-4">
                       <div className="product-img-h28">
                         <img src={product.imageUrl} alt={product.title} />
-                        <button onClick={() => handleFavorite(product.id)} className={`favorite-btn ${favorite[product.id] ? "active" : ""}`}>
-                          <span className={`material-symbols-outlined ${favorite[product.id] ? 'icon-fill' : ''}`}>
+                        <button onClick={() => toggleFavorite(product.id)} className={`favorite-btn ${favorites[product.id] ? "active" : ""}`}>
+                          <span className={`material-symbols-outlined ${favorites[product.id] ? 'icon-fill' : ''}`}>
                           favorite
                           </span>
                         </button>

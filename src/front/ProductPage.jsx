@@ -10,15 +10,7 @@ export default function ProductPage(){
 
   const { id } = useParams();
   const [product, setProduct] = useState([]);
-  const [favorite, setFavorite] = useState({});
-  const { cartData, setCartData } = useContext(AppContext);
-
-  const handleFavorite = (productId) => {
-    setFavorite((prevState) => ({
-      ...prevState,
-      [productId]: !prevState[productId],
-    }));
-  };
+  const { cartData, setCartData, favorites, toggleFavorite } = useContext(AppContext);
 
   useEffect(() => {
     const getProductId = async() => {
@@ -91,8 +83,8 @@ export default function ProductPage(){
               <div className="product-info h-100">
                 <div className="product-img text-center">
                   <img src={product.imageUrl} alt={product.title} />
-                  <button onClick={() => handleFavorite(product.id)} className={`position-absolute border-0 favorite-btn ${favorite[product.id] ? 'favorite-active' : ''}`}>
-                    <span className={`material-symbols-outlined ${favorite[product.id] ? 'icon-fill' : ''}`}>
+                  <button onClick={() => toggleFavorite(product.id)} className={`position-absolute border-0 favorite-btn ${favorites[product.id] ? 'favorite-active' : ''}`}>
+                    <span className={`material-symbols-outlined ${favorites[product.id] ? 'icon-fill' : ''}`}>
                     favorite
                     </span>
                   </button>
