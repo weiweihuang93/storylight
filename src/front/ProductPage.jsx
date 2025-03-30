@@ -88,7 +88,7 @@ export default function ProductPage(){
                     favorite
                     </span>
                   </button>
-                  <p className="condition-tag">A</p>
+                  <p className="condition-tag">{product.condition}</p>
                 </div>
                 <div className="product-price mb-2">
                   <del className="text-sm me-3">售價：{product.origin_price}</del>
@@ -96,8 +96,15 @@ export default function ProductPage(){
                     <span className="material-symbols-outlined text-primary me-2">paid</span>{product.price}
                   </p>
                 </div>
-                <button onClick={() => addCart(product.id)} className={`btn w-100 mt-auto ${isInCart ? "btn-gray-600" : " btn-warning"}`} type="button" disabled={isInCart}>
-                  {isInCart ? "已加入購物車" : "加入購物車"}
+                <button
+                  onClick={() => addCart(product.id)}
+                  className={`btn w-100 mt-auto ${
+                    product.qty === 0 ? "btn-gray-600" : isInCart ? "btn-gray-600" : "btn-warning"
+                  }`}
+                  type="button"
+                  disabled={isInCart || product.qty === 0}
+                >
+                {product.qty === 0 ? "已售完" : isInCart ? "已加入購物車" : "加入購物車"}
                 </button>
               </div>
             </div>

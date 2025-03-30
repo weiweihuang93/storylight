@@ -137,9 +137,10 @@ export default function CategoryPage(){
                           favorite
                           </span>
                         </button>
-                        <p className="condition-tag">A</p>
+                        <p className="condition-tag">{product.condition}</p>
                       </div>
                     </div>
+
                     
                     <div className="col-7 col-lg-4 border-lg-end">
                       <div className="product-detail p-1">
@@ -155,8 +156,15 @@ export default function CategoryPage(){
                             </p>
                           </div>
                         </ul>
-                        <button onClick={() => addCart(product.id)} className={`btn w-100 ${isInCart ? "btn-gray-600" : " btn-warning"}`} type="button" disabled={isInCart}>
-                          {isInCart ? "已加入購物車" : "加入購物車"}
+                        <button
+                          onClick={() => addCart(product.id)}
+                          className={`btn w-100 mt-auto ${
+                            product.qty === 0 ? "btn-gray-600" : isInCart ? "btn-gray-600" : "btn-warning"
+                          }`}
+                          type="button"
+                          disabled={isInCart || product.qty === 0}
+                        >
+                        {product.qty === 0 ? "已售完" : isInCart ? "已加入購物車" : "加入購物車"}
                         </button>
                       </div>
                     </div>
@@ -174,6 +182,13 @@ export default function CategoryPage(){
                       </div>
                     </div>
                   </div>
+
+                  {/* 售完遮罩 */}
+                  {product.qty === 0 && (
+                    <div className="sold-out-overlay">
+                      <p className="sold-out-text">售完</p>
+                    </div>
+                  )}
                 </div>
               )
               })}

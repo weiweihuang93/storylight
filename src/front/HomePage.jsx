@@ -30,7 +30,7 @@ export default function HomePage(){
       const filterProducts = res.data.products.filter(product => product.category !== "滿額索取" && product.category !== "運費專區");
       // console.log(filterProducts)
       // setProducts(res.data.products);
-      const filter10Products = filterProducts.slice(0, 10); // 只取前 10 筆資料
+      const filter10Products = filterProducts.slice(-10); // 只取前 10 筆資料
       setProducts(filter10Products);
     }catch(err){
       console.log(err);
@@ -44,7 +44,7 @@ export default function HomePage(){
       });
       // console.log('getBonusProduct', res);
       // setProducts(res.data.products);
-      const filter10Products = res.data.products.slice(0, 10); // 只取前 10 筆資料
+      const filter10Products = res.data.products.slice(-10); // 只取前 10 筆資料
       setBonusProducts(filter10Products);
     }catch(err){
       console.log(err);
@@ -84,8 +84,8 @@ export default function HomePage(){
     <header>
       <div className="container-fluid p-0">
         <div className="header-banner">
-          <img className="header-img" src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2728&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="header-banner" />
-          <div className="header-info">
+        <img className="header-img" src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2728&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="header-banner" />
+        <div className="header-info">
             <h1 className="fs-2 mb-5">讓時光，<br />在舊書的翻閱中靜靜流轉...</h1>
             <h2 className="fs-2 text-md-end text-start">
               <span className="d-block d-md-inline">每一本書，</span>
@@ -261,7 +261,7 @@ export default function HomePage(){
                     favorite
                     </span>
                   </button>
-                  <p className="condition-tag">A</p>
+                  <p className="condition-tag">{product.condition}</p>
                 </div>
                 <ul className="product-info p-2">
                   <li className="fw-bold title-clamp-2 h-3em">
@@ -276,9 +276,23 @@ export default function HomePage(){
                   </div>
                 </ul>
                 <Link className="btn btn-orange-dark w-100 mb-2" type="button" to={`/category/${product.category}/${product.id}`}>繼續閱讀</Link>
-                <button onClick={() => addCart(product.id)} className={`btn w-100 mt-auto ${isInCart ? "btn-gray-600" : " btn-warning"}`} type="button" disabled={isInCart}>
-                  {isInCart ? "已加入購物車" : "加入購物車"}
+                <button
+                  onClick={() => addCart(product.id)}
+                  className={`btn w-100 mt-auto ${
+                    product.qty === 0 ? "btn-gray-600" : isInCart ? "btn-gray-600" : "btn-warning"
+                  }`}
+                  type="button"
+                  disabled={isInCart || product.qty === 0}
+                >
+                {product.qty === 0 ? "已售完" : isInCart ? "已加入購物車" : "加入購物車"}
                 </button>
+
+                {/* 售完遮罩 */}
+                {product.qty === 0 && (
+                  <div className="sold-out-overlay">
+                    <p className="sold-out-text">售完</p>
+                  </div>
+                )}
               </div>
             </SwiperSlide>
           )
@@ -320,7 +334,7 @@ export default function HomePage(){
                     favorite
                     </span>
                   </button>
-                  <p className="condition-tag">A</p>
+                  <p className="condition-tag">{product.condition}</p>
                 </div>
                 <ul className="product-info p-2">
                   <li className="fw-bold title-clamp-2 h-3em">
@@ -335,9 +349,23 @@ export default function HomePage(){
                   </div>
                 </ul>
                 <Link className="btn btn-orange-dark w-100 mb-2" type="button" to={`/category/${product.category}/${product.id}`}>繼續閱讀</Link>
-                <button onClick={() => addCart(product.id)} className={`btn w-100 mt-auto ${isInCart ? "btn-gray-600" : " btn-warning"}`} type="button" disabled={isInCart}>
-                  {isInCart ? "已加入購物車" : "加入購物車"}
+                <button
+                  onClick={() => addCart(product.id)}
+                  className={`btn w-100 mt-auto ${
+                    product.qty === 0 ? "btn-gray-600" : isInCart ? "btn-gray-600" : "btn-warning"
+                  }`}
+                  type="button"
+                  disabled={isInCart || product.qty === 0}
+                >
+                {product.qty === 0 ? "已售完" : isInCart ? "已加入購物車" : "加入購物車"}
                 </button>
+
+              {/* 售完遮罩 */}
+              {product.qty === 0 && (
+                <div className="sold-out-overlay">
+                  <p className="sold-out-text">售完</p>
+                </div>
+              )}
               </div>
             </SwiperSlide>
           )
@@ -353,7 +381,7 @@ export default function HomePage(){
           <div className="membership-wrap">
             <h2 className="text-center mb-lg-5 mb-4">\ 專屬會員限定優惠 /</h2>
             <ul>
-              <li><span className="material-symbols-outlined icon-fill"> check_circle </span>會員積分回饋（每消費 1 元累積 1 點），積分可用於折扣或專屬優惠。</li>
+              <li><span className="material-symbols-outlined icon-fill"> check_circle </span>會員積分回饋（每消費 1 元累積 1 點），積分可用於兌換專屬優惠。</li>
               <li><span className="material-symbols-outlined icon-fill"> check_circle </span>找不到想要的嗎？填寫徵求表單，告訴我們您的需求，讓好書輕鬆入手！</li>
               <li><span className="material-symbols-outlined icon-fill"> check_circle </span>定期發放專屬優惠券和折扣活動，讓你以更優惠的價格收藏好書。</li>
               <li><span className="material-symbols-outlined icon-fill"> check_circle </span>購物滿額，即可免費索取好書，輕鬆擁有更多好書！</li>
