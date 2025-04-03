@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useState, useEffect, useContext } from "react";
 import { AppContext } from "../context/AppContext";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -9,7 +9,8 @@ const API_PATH = import.meta.env.VITE_API_PATH;
 export default function CompletePage(){
   
   const { orderId, shippingAdd } = useContext(AppContext);
-  const [order, setOrder] = useState({});
+  const [orderData, setOrderData] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     getOrderId();
@@ -20,11 +21,14 @@ export default function CompletePage(){
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/order/${orderId}`);
       // console.log(res.data.data.carts);
       // console.log('getOrderId', Object.values(res.data.order.products));
-      setOrder(res.data.order);
+      setOrderData(res.data.order);
+      setTimeout(() => {
+        navigate("/");
+      }, 5000);
     }catch(err){
-      // console.log(err);
+      console.log('getOrderId', err);
     }
-  }
+  };
 
   return(
     <>
@@ -44,7 +48,7 @@ export default function CompletePage(){
               <li><strong>訂單編號：</strong>{orderId}</li>
               <li>
                 <strong>訂單時間：</strong>
-                {new Date(order.create_at * 1000).toLocaleString("zh-TW", {
+                {new Date(orderData.create_at * 1000).toLocaleString("zh-TW", {
                   year: "numeric",
                   month: "2-digit",
                   day: "2-digit",
@@ -57,23 +61,23 @@ export default function CompletePage(){
               <li><strong>運送方式：</strong>宅配</li>
               <li className="text-danger">預計出貨時間：2-3 個工作天內</li>
               <li>
-                <strong>總金額：</strong>NT$ {Math.round(order.total)}
+                <strong>總金額：</strong>NT$ {Math.round(orderData.total)}
                 {shippingAdd && <span className="text-muted">（已加收運費 NT$ 100）</span>}
               </li>
               <li>
                 <strong>付款狀態：</strong>
-                {order.is_paid ? <span className="text-success">已付款</span> : <span className="text-danger">尚未付款</span>}
+                {orderData.is_paid ? <span className="text-success">已付款</span> : <span className="text-danger">尚未付款</span>}
               </li>
             </ul>
           </div>
           <div className="order-content mt-4 p-4 border rounded bg-white w-md-100 w-lg50">
             <h5 className="mb-3">訂單明細</h5>
             <ul>
-              {Object.values(order.products || {}).filter((item) => (
+              {Object.values(orderData.products || {}).filter((item) => (
                 item.product_id !== "-OLDh-kx-_pNd2Ls902s"
 
               )).map((item) => (
-                <li key={item.product_id} className={`d-flex align-items-center ${order.products.length > 1 ? "border-bottom pb-3" : ""}`}>
+                <li key={item.product_id} className={`d-flex align-items-center ${orderData.products.length > 1 ? "border-bottom pb-3" : ""}`}>
                   <img src={item.product.imageUrl} alt={item.product.title} className="me-3 rounded" width="80" />
                   <div>
                     <h6 className="">{item.product.title}</h6>

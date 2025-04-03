@@ -20,7 +20,7 @@ export default function FrontLayout() {
     if (isShippingInCart){
       setShippingAdd(true);
     }
-  }, [cartData, shippingAdd]);
+  }, [cartData]);
 
   // 監聽視窗尺寸變化並更新折疊選單的狀態
   useEffect(() => {
@@ -105,7 +105,7 @@ export default function FrontLayout() {
       <div className="collapse navbar-collapse justify-content-center" id="navbarCollapse">
         <form className="form-search d-lg-none d-md-flex m-3" role="search">
           <input className="input-search form-control form-control-input" type="search" placeholder="搜尋" aria-label="Search" />
-          <a className="a-search" type="button" href="#">
+          <a className="a-search" type="button">
             <span className="material-symbols-outlined"> search </span>
           </a>
         </form>
@@ -115,7 +115,9 @@ export default function FrontLayout() {
                 <NavLink className="nav-link py-2 px-4 w-100" aria-current="page" to={route.path} end>{route.name}</NavLink>
               </li>
             ))}
-            <Link to="/login" className="d-lg-none btn btn-orange btn-md-sm">登入 / 註冊</Link>
+            <li className="nav-item d-lg-none">
+              <NavLink to="/login" className=" btn btn-orange w-100">登入 / 註冊</NavLink>
+            </li>
           </ul>
         </div>
         <div className={`memberbar ${isMemberbarOpen ? "d-block" : "d-none"}`}>

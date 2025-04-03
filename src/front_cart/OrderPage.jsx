@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useState, useEffect, useContext } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { AppContext } from "../context/AppContext";
 
@@ -16,17 +16,12 @@ export default function OrderPage() {
     handleSubmit,
     reset,
     watch,
-    formState: { errors }
+    formState: { errors, isValid }
   } = useForm({ mode: "onBlur" });
 
   const paymentMethod = watch("paymentMethod");
-  const email = watch("email");
-  const name = watch("name");
-  const tel = watch("tel");
-  const address = watch("address");
 
-  const { setOrderId, cartData, setCartData, selectedCoupon, setSelectedCoupon } = useContext(AppContext);
-  // const [selectedCoupon, setSelectedCoupon] = useState("");
+  const { setOrderId, cartData, setCartData, getCartData, selectedCoupon, setSelectedCoupon } = useContext(AppContext);
   const [selectedCouponDescription, setSelectedCouponDescription] = useState("");
   const [totalAfterCoupon, setTotalAfterCoupon] = useState("");
 
@@ -36,24 +31,15 @@ export default function OrderPage() {
     { code: "NONE", title: "不使用優惠券", description: "不使用優惠券" },
   ];
 
-  useEffect(() => {
-    setSelectedCoupon("")
-  }, [])
-
   const handleCoupon = async() => {
     try{
-      if (!selectedCoupon){
-        setTotalAfterCoupon(null); // 沒有選擇優惠券時，清空折扣金額
-        setSelectedCouponDescription(""); // 清除優惠券描述
-        return;
-      }
       const res = await axios.post(`${BASE_URL}/v2/api/${API_PATH}/coupon`, {
         "data": {
           "code": selectedCoupon
         }
       });
-      // console.log('handleCoupon', res);
-      setTotalAfterCoupon(res.data.data);
+      console.log('handleCoupon', res);
+      setTotalAfterCoupon(res.data.data); //final_total
 
       // 更新優惠券描述
       const selectCouponData = addcoupons.find(coupon => coupon.code === selectedCoupon);
@@ -63,15 +49,33 @@ export default function OrderPage() {
     }
   };
 
+  const handleCouponNone = async() => {
+    try{
+      const res = await axios.post(`${BASE_URL}/v2/api/${API_PATH}/coupon`, {
+        "data": {
+          "code": "NONE"
+        }
+      });
+      console.log("handleCoupon-NONE", res);
+      console.log('selectedCoupon', selectedCoupon)
+      setSelectedCoupon("")
+      setTotalAfterCoupon(null); // 沒有選擇優惠券時，清空折扣金額
+      setSelectedCouponDescription(""); // 清除優惠券描述
+      getCartData();
+    }catch(err){
+      console.log(err);
+    }
+  };
+
   const submitOrder = async (data) => {
     try{
       const res = await axios.post(`${BASE_URL}/v2/api/${API_PATH}/order`, data)
-      // console.log(res.data);
+      console.log(res);
       setOrderId(res.data.orderId)
       setCartData([]); //清空購物車資料
       navigate("/cart/payment");
     }catch (error){
-      // console.log(error)
+      console.error("訂單提交失敗:", error);
     }
   };
 
@@ -88,11 +92,15 @@ export default function OrderPage() {
     reset();
   };
 
+  useEffect(() => {
+    handleCouponNone();
+  }, []);
+
   return (
     <>
     <section className="section-order">
       <div className="bg">
-        <div className="container p-6">
+        <div className="container py-6">
           <div className="row g-3">
             {/* 優惠券選擇 */}
             <div className="col-lg-4">
@@ -124,7 +132,7 @@ export default function OrderPage() {
                     <>
                     <div className="d-flex justify-content-between">
                       <p>優惠折扣</p>
-                      <p>－ NT$ {cartData.final_total - totalAfterCoupon.final_total}</p>
+                      <p>－ NT$ {Math.round(cartData.final_total - totalAfterCoupon.final_total)}</p>
                     </div>
 
                     {/* 顯示優惠券描述 */}
@@ -139,7 +147,7 @@ export default function OrderPage() {
                   (<>
                   <div className="d-flex justify-content-between">
                     <h5>結帳金額</h5>
-                    <h5 className="text-danger">NT$ {totalAfterCoupon.final_total}</h5>
+                    <h5 className="text-danger">NT$ {Math.round(totalAfterCoupon.final_total)}</h5>
                   </div>
                   </>) : 
                   (<>
@@ -179,7 +187,15 @@ export default function OrderPage() {
                     <h5>信用卡資訊</h5>
                     <div className="mb-2">
                       <label className="form-label">信用卡號</label>
-                      <input type="text" className="form-control" {...register("creditCardNumber")} />
+                      <input type="text" className="form-control" 
+                        {...register("creditCardNumber", {
+                          required: "信用卡號必填",
+                          pattern: {
+                            value: /^\d{16}$/, // 簡單的 16 位數字驗證
+                            message: "信用卡號格式錯誤"
+                          }
+                        })} />
+                        {errors?.creditCardNumber && <p className="text-danger my-2">{errors.creditCardNumber.message}</p>}
                     </div>
                     <div className="mb-2">
                       <label className="form-label">持卡人姓名</label>
@@ -224,7 +240,7 @@ export default function OrderPage() {
                             message: 'Email 格式錯誤'
                           }
                         })}
-                        id="email" type="email" className={`form-control border-radius-8 py-2 px-3 ${errors.email && 'is-invalid'}`} placeholder="請輸入Email" />
+                        id="email" type="email" className={`form-control ${errors.email && 'is-invalid'}`} placeholder="請輸入Email" />
                         {errors?.email && <p className="text-danger my-2">{errors.email.message}</p>}
                     </div>
                     <div className="col-12">
@@ -235,7 +251,7 @@ export default function OrderPage() {
                         {...register('name', {
                           required: '姓名 欄位必填'
                         })}
-                        id="name" type="text" className={`form-control border-radius-8 py-2 px-3 ${errors.name && 'is-invalid'}`} placeholder="請輸入姓名" />
+                        id="name" type="text" className={`form-control ${errors.name && 'is-invalid'}`} placeholder="請輸入姓名" />
                         {errors?.name && <p className="text-danger my-2">{errors.name.message}</p>}
                     </div>
                     <div className="col-12">
@@ -250,7 +266,7 @@ export default function OrderPage() {
                             message: '電話 格式錯誤'
                           }
                         })}
-                        id="tel" type="tel" className={`form-control border-radius-8 py-2 px-3 ${errors.tel && 'is-invalid'}`} placeholder="請輸入電話" />
+                        id="tel" type="tel" className={`form-control ${errors.tel && 'is-invalid'}`} placeholder="請輸入電話" />
                         {errors?.tel && <p className="text-danger my-2">{errors.tel.message}</p>}
                     </div>
                     <div className="col-12">
@@ -261,7 +277,7 @@ export default function OrderPage() {
                         {...register('address', {
                           required: '地址 欄位必填'
                         })}
-                        id="address" type="text" className={`form-control border-radius-8 py-2 px-3 ${errors.address && 'is-invalid'}`} placeholder="請輸入地址" />
+                        id="address" type="text" className={`form-control ${errors.address && 'is-invalid'}`} placeholder="請輸入地址" />
                         {errors?.address && <p className="text-danger my-2">{errors.address.message}</p>}
                     </div>
                     <div className="col-12">
@@ -277,13 +293,11 @@ export default function OrderPage() {
                   {/* 進行下一步的按鈕 */}
                   <div className="text-end mt-3">
                     <button type="submit" className="btn btn-orange-dark px-4 py-2"
-                      disabled={cartData.length === 0 ||
-                      !paymentMethod ||
-                      !name ||
-                      !email ||
-                      !tel ||
-                      !address ||
-                      Object.keys(errors).length > 0}>
+                      disabled={
+                        cartData.length === 0 ||
+                        !paymentMethod ||
+                        !isValid ||
+                        Object.keys(errors).length > 0}>
                       送出訂單
                     </button>
                   </div>

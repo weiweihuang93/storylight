@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState, useEffect, useContext } from "react";
+import { useEffect, useContext } from "react";
 import { useNavigate } from "react-router";
 import { AppContext } from "../context/AppContext";
 
@@ -9,28 +9,44 @@ const API_PATH = import.meta.env.VITE_API_PATH;
 export default function CartPage(){
 
   const navigate = useNavigate();
+  
+  const { cartData, getCartData, shippingAdd, setShippingAdd } = useContext(AppContext);
 
-  // const [cartData, setCartData] = useState([]);
-  const { cartData, setCartData, shippingAdd, setShippingAdd, selectedCoupon, setSelectedCoupon } = useContext(AppContext);
-  // // const [selectedCoupon, setSelectedCoupon] = useState("");
-  // const [selectedCouponDescription, setSelectedCouponDescription] = useState("");
-  // const [totalAfterCoupon, setTotalAfterCoupon] = useState("");
-  // // const [shippingAdd, setShippingAdd] = useState(false);
-  // // const [shippingRemove, setShippingRemove] = useState(false); // 避免重複刪除運費
+  const delAllCart = async() => {
+    try{
+      const res = await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/carts`);
+      console.log('delAllCart', res);
+      getCartData();
+    }catch(err){
+      console.log('delAllCart: 刪除全部購物車失敗', err);
+    }
+  };
 
-  const addcoupons = [
-    { code: "WELCOME", title: "新會員專屬優惠", description: "新會員首次購物可享 70% 折扣" },
-    { code: "MONTHLY90", title: "限時折扣券", description: "購物可享 90% 折扣，限時使用" },
-    { code: "NONE", title: "不使用優惠券", description: "不使用優惠券" },
-  ];
+  const delIdCart = async(cart_id) => {
+    try{
+      const res = await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/cart/${cart_id}`);
+      console.log('delIdCart', res);
+      getCartData();
+    }catch(err){
+      console.log('delIdCart: 刪除ID購物車失敗', err);
+    }
+  };
 
-  // useEffect(() => {
-  //   getCart();
-  // }, []); 
-
-  useEffect(() => {
-    handleCoupon()
-  }, []);
+  const updateCart = async() => {
+    try{
+      const res = await axios.post(`${BASE_URL}/v2/api/${API_PATH}/cart`, {
+        "data": {
+          "product_id": "-OLDh-kx-_pNd2Ls902s", //加入運費商品
+          "qty": 1
+        }
+      });
+      // console.log('updateCart', res);
+      setShippingAdd(true);
+      getCartData();
+    }catch(err){
+      console.log(err);
+    }
+  };
 
   useEffect(() => {
     const isShippingInCart = cartData?.carts?.some((item) => item.product_id === "-OLDh-kx-_pNd2Ls902s");
@@ -49,66 +65,6 @@ export default function CartPage(){
     };
   }, [cartData]);
 
-  const getCart = async() => {
-    try{
-      const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/cart`);
-      // console.log(res.data.data.carts);
-      // console.log('getCart', res);
-      setCartData(res.data.data);
-    }catch(err){
-      // console.log(err);
-    }
-  };
-
-  const delCart = async() => {
-    try{
-      const res = await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/carts`);
-      // console.log(res);
-      getCart();
-    }catch(err){
-      console.log(err);
-    }
-  };
-
-  const delIdCart = async(cart_id) => {
-    try{
-      const res = await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/cart/${cart_id}`);
-      // console.log(res);
-      getCart();
-    }catch(err){
-      console.log(err);
-    }
-  };
-
-  const updateCart = async() => {
-    try{
-      const res = await axios.post(`${BASE_URL}/v2/api/${API_PATH}/cart`, {
-        "data": {
-          "product_id": "-OLDh-kx-_pNd2Ls902s", //加入運費商品
-          "qty": 1
-        }
-      });
-      // console.log('updateCart', res);
-      setShippingAdd(true);
-      getCart();
-    }catch(err){
-      console.log(err);
-    }
-  };
-
-  const handleCoupon = async() => {
-    try{
-      const res = await axios.post(`${BASE_URL}/v2/api/${API_PATH}/coupon`, {
-        "data": {
-          "code": "NONE"
-        }
-      });
-      console.log("handleCoupon-NONE", res);
-    }catch(err){
-      console.log(err);
-    }
-  };
-
   return(
     <>
     <section className="section-cart">
@@ -122,7 +78,7 @@ export default function CartPage(){
               <div className="cart-confirm p-3">
                 <div className="d-flex justify-content-between">
                   <h4>確認訂單</h4>
-                  <button onClick={() => delCart()} className="btn btn-outline-danger fs-6" type="button">清空購物車</button>
+                  <button onClick={() => delAllCart()} className="btn btn-outline-danger fs-6" type="button">清空購物車</button>
                 </div>
                 
                 <div className="cart-item fw-bold text-center">

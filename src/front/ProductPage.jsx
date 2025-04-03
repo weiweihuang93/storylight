@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useContext, useEffect, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { AppContext } from "../context/AppContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -9,15 +9,15 @@ const API_PATH = import.meta.env.VITE_API_PATH;
 export default function ProductPage(){
 
   const { id } = useParams();
-  const [product, setProduct] = useState([]);
-  const { cartData, setCartData, favorites, toggleFavorite } = useContext(AppContext);
+  const [productsData, setProductsData] = useState([]);
+  const { cartData, addCart, favorites, toggleFavorite } = useContext(AppContext);
 
   useEffect(() => {
     const getProductId = async() => {
       try{
         const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/product/${id}`)
-        // console.log(res);
-        setProduct(res.data.product);
+        console.log(res);
+        setProductsData(res.data.product);
       }catch(err){
         console.log(err);
       }
@@ -25,34 +25,9 @@ export default function ProductPage(){
     getProductId();
   }, [id]);
 
-  const addCart = async(product_id) => {
-    try{
-      const res = await axios.post(`${BASE_URL}/v2/api/${API_PATH}/cart`, {
-        "data": {
-          "product_id": product_id,
-          "qty": 1
-        }
-      });
-      // console.log('addCart', res);
-      getCart();
-    }catch(err){
-      console.log(err);
-    }
-  };
-
-  const getCart = async() => {
-    try{
-      const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/cart`);
-      // console.log(res.data.data.carts);
-      // console.log('getCart', res);
-      setCartData(res.data.data)
-    }catch(err){
-      // console.log(err);
-    }
-  };
-
+  // console.log(cartData)
   const isInCart = cartData?.carts?.some((item) => item.product_id === id);
-
+  
   return(
     <>
     <section className="section-product">
@@ -69,10 +44,10 @@ export default function ProductPage(){
                 <Link to="/category">全部商品</Link>
               </li>
               <li className="breadcrumb-item" aria-current="page">
-                <Link to={`/category/${product.category}`}>{product.category}</Link>
+                <Link to={`/category/${productsData.category}`}>{productsData.category}</Link>
               </li>
               <li className="breadcrumb-item active" aria-current="page">
-                {product.title}
+                {productsData.title}
               </li>
             </ol>
           </nav>
@@ -82,39 +57,39 @@ export default function ProductPage(){
               {/* 產品圖片區 */}
               <div className="product-info h-100">
                 <div className="product-img text-center">
-                  <img src={product.imageUrl} alt={product.title} />
-                  <button onClick={() => toggleFavorite(product.id)} className={`position-absolute border-0 favorite-btn ${favorites[product.id] ? 'favorite-active' : ''}`}>
-                    <span className={`material-symbols-outlined ${favorites[product.id] ? 'icon-fill' : ''}`}>
+                  <img src={productsData.imageUrl} alt={productsData.title} />
+                  <button onClick={() => toggleFavorite(productsData.id)} className={`position-absolute border-0 favorite-btn ${favorites[productsData.id] ? 'favorite-active' : ''}`}>
+                    <span className={`material-symbols-outlined ${favorites[productsData.id] ? 'icon-fill' : ''}`}>
                     favorite
                     </span>
                   </button>
-                  <p className="condition-tag">{product.condition}</p>
+                  <p className="condition-tag">{productsData.condition}</p>
                 </div>
                 <div className="product-price mb-2">
-                  <del className="text-sm me-3">售價：{product.origin_price}</del>
+                  <del className="text-sm me-3">售價：{productsData.origin_price}</del>
                   <p className="fs-5 text-danger fw-bold">
-                    <span className="material-symbols-outlined text-primary me-2">paid</span>{product.price}
+                    <span className="material-symbols-outlined text-primary me-2">paid</span>{productsData.price}
                   </p>
                 </div>
                 <button
-                  onClick={() => addCart(product.id)}
+                  onClick={() => addCart(productsData.id)}
                   className={`btn w-100 mt-auto ${
-                    product.qty === 0 ? "btn-gray-600" : isInCart ? "btn-gray-600" : "btn-warning"
+                    productsData.qty === 0 ? "btn-gray-600" : isInCart ? "btn-gray-600" : "btn-warning"
                   }`}
                   type="button"
-                  disabled={isInCart || product.qty === 0}
+                  disabled={isInCart || productsData.qty === 0}
                 >
-                {product.qty === 0 ? "已售完" : isInCart ? "已加入購物車" : "加入購物車"}
+                {productsData.qty === 0 ? "已售完" : isInCart ? "已加入購物車" : "加入購物車"}
                 </button>
               </div>
             </div>
             <div className="col-lg-8">
               {/* 產品介紹 */}
               <div className="product-info h-100">
-                <h5 className="my-3 mt-lg-0">{product.title}</h5>
+                <h5 className="my-3 mt-lg-0">{productsData.title}</h5>
                 <div className="bg-secondary-500 p-3 w-100 h-100">
-                  <p className="text-pre-line">{product.content}</p>
-                  <p className="text-pre-line">{product.description}</p>
+                  <p className="text-pre-line">{productsData.content}</p>
+                  <p className="text-pre-line">{productsData.description}</p>
                 </div>
               </div>
             </div>
@@ -128,13 +103,13 @@ export default function ProductPage(){
             <div className="product-detail mb-3">
               <h6 className="text-orange-dark mb-3">商品細節</h6>
               <ul>
-                <li>ISBN：{product.isbn}</li>
-                <li>作者：{product.author}</li>
-                <li>出版社：{product.publisher}</li>
-                <li>出版日期：{product.publishdate}</li>
-                <li>適讀對象：{product.suitable}</li>
-                <li>語言：{product.language}</li>
-                <li>規格：{product.size}</li>
+                <li>ISBN：{productsData.isbn}</li>
+                <li>作者：{productsData.author}</li>
+                <li>出版社：{productsData.publisher}</li>
+                <li>出版日期：{productsData.publishdate}</li>
+                <li>適讀對象：{productsData.suitable}</li>
+                <li>語言：{productsData.language}</li>
+                <li>規格：{productsData.size}</li>
               </ul>
             </div>
             <div className="product-condition mb-3">
@@ -150,7 +125,7 @@ export default function ProductPage(){
             <div className="product-condition">
               <h6 className="text-orange-dark mb-3">更多書況說明</h6>
               <ul>
-                <li>{product.conditionDescription ? "" : "無"}</li>
+                <li>{productsData.conditionDescription ? "" : "無"}</li>
               </ul>
             </div>
           </div>

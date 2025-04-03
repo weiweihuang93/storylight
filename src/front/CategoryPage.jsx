@@ -10,64 +10,40 @@ const categories = ["全部商品", "親子童書", "商業理財", "藝術音�
 
 export default function CategoryPage(){
   const { categoryName } = useParams();
-  const [products, setProducts] = useState([]);
-  const { cartData, setCartData, favorites, toggleFavorite } = useContext(AppContext);
+  const [productsData, setProductsData] = useState([]);
+  const { cartData, addCart, favorites, toggleFavorite } = useContext(AppContext);
+
+  // 取得產品 過濾運費專區
+  const getAllProduct = async() => {
+    try{
+      const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products/all`);
+      console.log('getAllProduct', res.data.products);
+      const filterCategoryProducts = res.data.products.filter((item) => item.category !== '運費專區');
+      setProductsData(filterCategoryProducts);
+    }catch(error){
+      console.log('getAllProduct: 取得全部產品失敗', error);
+    }
+  };
+
+  const getCategoryProduct = async(category) => {
+    try{
+      const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products`, {
+        params: { category },
+      });
+      console.log('getCategoryProduct', res.data.products);
+      setProductsData(res.data.products);
+    }catch(error){
+      console.log('getCategoryProduct: 取得分類產品失敗', error);
+    }
+  };
 
   useEffect(() => {
     if (!categoryName || categoryName === "全部商品") {
       getAllProduct();
     } else {
-      getCategory(categoryName);
+      getCategoryProduct(categoryName);
     }
   }, [categoryName]);
-
-  const getAllProduct = async () => {
-    try {
-      const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products/all`);
-      // console.log('getAllProduct', res);
-      const filterProducts = res.data.products.filter(product => product.category !== "運費專區");
-      setProducts(filterProducts);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const getCategory = async (category) => {
-    try {
-      const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products`, {
-        params: { category },
-      });
-      setProducts(res.data.products);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const addCart = async(product_id) => {
-    try{
-      const res = await axios.post(`${BASE_URL}/v2/api/${API_PATH}/cart`, {
-        "data": {
-          "product_id": product_id,
-          "qty": 1
-        }
-      });
-      // console.log('addCart', res);
-      getCart();
-    }catch(err){
-      console.log(err);
-    }
-  };
-
-  const getCart = async() => {
-    try{
-      const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/cart`);
-      // console.log(res.data.data.carts);
-      // console.log('getCart', res);
-      setCartData(res.data.data)
-    }catch(err){
-      // console.log(err);
-    }
-  };
 
   return(
     <>
@@ -75,7 +51,9 @@ export default function CategoryPage(){
       <div className="bg py-3">
         <div className="container">
           <div className="row gy-3">
-            <div className="col-lg-3">
+
+            {/* 左側分類欄 */}
+            <aside className="col-lg-3">
               <h5 className="d-none d-lg-block bg-orange-dark text-white py-3 px-4">書籍分類</h5>
               <button
                 className="d-lg-none btn btn-orange-dark rounded-0 w-100"
@@ -102,9 +80,11 @@ export default function CategoryPage(){
                   ))}
                 </ul>
               </div>
-            </div>
+            </aside>
 
+            {/* 產品列表區塊 */}
             <div className="col-lg-9">
+              
               {/* 麵包屑導航 */}
               <nav aria-label="breadcrumb">
                 <ol className="breadcrumb">
@@ -120,7 +100,8 @@ export default function CategoryPage(){
                 </ol>
               </nav>
 
-              {products.map((product) => {
+              {/* 產品卡片 */}
+              {productsData.map((product) => {
                 const isInCart = cartData?.carts?.some((item) => item.product_id === product.id);
 
                 return(

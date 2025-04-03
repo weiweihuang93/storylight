@@ -12,70 +12,40 @@ import "swiper/css/navigation";
 import { Link } from "react-router";
 
 export default function HomePage(){
+  
+  const [productsData, setProductsData] = useState([]);
+  const [bonusProductsData, setBonusProductsData] = useState([]);
+  const { cartData, addCart, favorites, toggleFavorite } = useContext(AppContext);
 
-  const [products, setProducts] = useState([]);
-  const [bonusProducts, setBonusProducts] = useState([]);
-  const { cartData, setCartData, favorites, toggleFavorite } = useContext(AppContext);
-
-  useEffect(() => {
-    getAllProduct();
-    getBonusProduct();
-    getCart();
-  }, []);
-
+  // 取得產品 過濾運費專區和滿額索取
   const getAllProduct = async() => {
     try{
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products/all`);
-      // console.log('getAllProduct', res);
-      const filterProducts = res.data.products.filter(product => product.category !== "滿額索取" && product.category !== "運費專區");
-      // console.log(filterProducts)
-      // setProducts(res.data.products);
-      const filter10Products = filterProducts.slice(-10); // 只取前 10 筆資料
-      setProducts(filter10Products);
-    }catch(err){
-      console.log(err);
+      console.log('getAllProduct', res.data.products);
+      const filterCategoryProducts = res.data.products.filter((item) => item.category !== '運費專區' && item.category !== '滿額索取');
+      const filter10Products = filterCategoryProducts.slice(-10);
+      setProductsData(filter10Products);
+    }catch(error){
+      console.log('getAllProduct: 取得全部產品失敗', error);
     }
   };
 
   const getBonusProduct = async() => {
     try{
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products`, {
-        params: { category: "滿額索取" }
+        params: { category: '滿額索取'}
       });
-      // console.log('getBonusProduct', res);
-      // setProducts(res.data.products);
-      const filter10Products = res.data.products.slice(-10); // 只取前 10 筆資料
-      setBonusProducts(filter10Products);
-    }catch(err){
-      console.log(err);
+      console.log('getBonusProduct', res);
+      setBonusProductsData(res.data.products);
+    }catch(error){
+      console.log('getBonusProduct: 取得滿額索取類別產品失敗', error)
     }
   };
 
-  const addCart = async(product_id) => {
-    try{
-      const res = await axios.post(`${BASE_URL}/v2/api/${API_PATH}/cart`, {
-        "data": {
-          "product_id": product_id,
-          "qty": 1
-        }
-      });
-      // console.log('addCart', res);
-      getCart();
-    }catch(err){
-      console.log(err);
-    }
-  };
-
-  const getCart = async() => {
-    try{
-      const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/cart`);
-      // console.log(res.data.data.carts);
-      // console.log('getCart', res);
-      setCartData(res.data.data);
-    }catch(err){
-      // console.log(err);
-    }
-  };
+  useEffect(() => {
+    getAllProduct();
+    getBonusProduct();
+  }, []); 
 
   return(
     <>
@@ -245,10 +215,10 @@ export default function HomePage(){
             992: { slidesPerView: 4 },
             1200: { slidesPerView: 5 },
           }}
-          className="swiper"
+          className="swiper py-2"
         >
-          {products.map((product) => {
-
+          {productsData.map((product) => {
+            
             const isInCart = cartData?.carts?.some((item) => item.product_id === product.id);
 
             return(
@@ -318,9 +288,9 @@ export default function HomePage(){
             992: { slidesPerView: 4 },
             1200: { slidesPerView: 5 },
           }}
-          className="swiper"
+          className="swiper py-2"
         >
-          {bonusProducts.map((product) => {
+          {bonusProductsData.map((product) => {
 
             const isInCart = cartData?.carts?.some((item) => item.product_id === product.id);
 
