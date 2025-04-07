@@ -2,6 +2,8 @@ import axios from "axios";
 import { useEffect, useContext } from "react";
 import { useNavigate } from "react-router";
 import { AppContext } from "../context/AppContext";
+import { useDispatch } from "react-redux";
+import { pushMessage } from "../redux/toastSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -9,29 +11,34 @@ const API_PATH = import.meta.env.VITE_API_PATH;
 export default function CartPage(){
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   
   const { cartData, getCartData, shippingAdd, setShippingAdd } = useContext(AppContext);
 
   const delAllCart = async() => {
     try{
       const res = await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/carts`);
-      console.log('delAllCart', res);
+      dispatch(pushMessage({
+        success: true,
+        message: '購物車目前沒有商品 ⋟﹏⋞'
+      }));
       getCartData();
     }catch(err){
-      console.log('delAllCart: 刪除全部購物車失敗', err);
+      dispatch(pushMessage(error.response.data));
     }
   };
 
   const delIdCart = async(cart_id) => {
     try{
       const res = await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/cart/${cart_id}`);
-      console.log('delIdCart', res);
+      dispatch(pushMessage(res.data));
       getCartData();
     }catch(err){
-      console.log('delIdCart: 刪除ID購物車失敗', err);
+      dispatch(pushMessage(error.response.data));
     }
   };
 
+  // 處理運費商品
   const updateCart = async() => {
     try{
       const res = await axios.post(`${BASE_URL}/v2/api/${API_PATH}/cart`, {
@@ -40,11 +47,34 @@ export default function CartPage(){
           "qty": 1
         }
       });
-      // console.log('updateCart', res);
+      dispatch(pushMessage({
+        success: true,
+        message: '未達免運門檻，已加入運費。'
+      }));
       setShippingAdd(true);
       getCartData();
     }catch(err){
-      console.log(err);
+      dispatch(pushMessage({
+        success: false,
+        message: '加入運費失敗，請稍後再試。'
+      }));
+    }
+  };
+
+  // 刪除運費商品
+  const delShippingIdCart = async(cart_id) => {
+    try{
+      const res = await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/cart/${cart_id}`);
+      dispatch(pushMessage({
+        success: true,
+        message: cartData.final_total >= 1600 ? '已達免運門檻，刪除運費。' : '購物車目前沒有商品 ⋟﹏⋞'
+      }));
+      getCartData();
+    }catch(err){
+      dispatch(pushMessage({
+        success: false,
+        message: '刪除運費失敗，請稍後再試。'
+      }));
     }
   };
 
@@ -55,7 +85,7 @@ export default function CartPage(){
       if (cartData.final_total >= 1600 || cartData.carts.length === 1){
         //移除運費商品
         const findCartId = cartData.carts.find((item) => item.product_id === "-OLDh-kx-_pNd2Ls902s")?.id;
-        delIdCart(findCartId);
+        delShippingIdCart(findCartId);
       }
     }else{
       setShippingAdd(false);
@@ -138,7 +168,7 @@ export default function CartPage(){
                 
             </>) : 
             (<>
-              <h4 className="text-gray-600 py-3">購物車目前沒有商品</h4>
+              <h4 className="text-gray-600 py-3">購物車目前沒有商品 ⋟﹏⋞</h4>
             </>)}
           </div>
         </div>

@@ -2,12 +2,15 @@ import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import { AppContext } from "../context/AppContext";
+import { useDispatch } from "react-redux";
+import { pushMessage } from "../redux/toastSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
 
 export default function ProductPage(){
-
+  
+  const dispatch = useDispatch();
   const { id } = useParams();
   const [productsData, setProductsData] = useState([]);
   const { cartData, addCart, favorites, toggleFavorite } = useContext(AppContext);
@@ -16,16 +19,17 @@ export default function ProductPage(){
     const getProductId = async() => {
       try{
         const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/product/${id}`)
-        console.log(res);
         setProductsData(res.data.product);
       }catch(err){
-        console.log(err);
+        dispatch(pushMessage({
+          success: false,
+          message: '載入商品資料發生錯誤，請稍後再試。'
+        }))
       }
     }
     getProductId();
   }, [id]);
-
-  // console.log(cartData)
+  
   const isInCart = cartData?.carts?.some((item) => item.product_id === id);
   
   return(

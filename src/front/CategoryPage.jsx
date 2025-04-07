@@ -2,6 +2,8 @@ import axios from "axios";
 import { useState, useEffect, useContext } from "react";
 import { Link, NavLink, useParams } from "react-router";
 import { AppContext } from "../context/AppContext";
+import { useDispatch } from "react-redux";
+import { pushMessage } from "../redux/toastSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -9,6 +11,8 @@ const API_PATH = import.meta.env.VITE_API_PATH;
 const categories = ["全部商品", "親子童書", "商業理財", "藝術音樂", "人文科普", "心理勵志", "生活休閒", "文學小說", "工具學習", "滿額索取"];
 
 export default function CategoryPage(){
+  
+  const dispatch = useDispatch();
   const { categoryName } = useParams();
   const [productsData, setProductsData] = useState([]);
   const { cartData, addCart, favorites, toggleFavorite } = useContext(AppContext);
@@ -17,11 +21,13 @@ export default function CategoryPage(){
   const getAllProduct = async() => {
     try{
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products/all`);
-      console.log('getAllProduct', res.data.products);
       const filterCategoryProducts = res.data.products.filter((item) => item.category !== '運費專區');
       setProductsData(filterCategoryProducts);
     }catch(error){
-      console.log('getAllProduct: 取得全部產品失敗', error);
+      dispatch(pushMessage({
+        success: false,
+        message: '載入商品資料發生錯誤，請稍後再試。'
+      }))
     }
   };
 
@@ -30,10 +36,12 @@ export default function CategoryPage(){
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products`, {
         params: { category },
       });
-      console.log('getCategoryProduct', res.data.products);
       setProductsData(res.data.products);
     }catch(error){
-      console.log('getCategoryProduct: 取得分類產品失敗', error);
+      dispatch(pushMessage({
+        success: false,
+        message: '載入商品資料發生錯誤，請稍後再試。'
+      }))
     }
   };
 

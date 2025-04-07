@@ -1,16 +1,18 @@
 import axios from "axios";
 import { useState, useEffect, useContext } from "react";
 import { AppContext } from "../context/AppContext";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
+import { useDispatch } from "react-redux";
+import { pushMessage } from "../redux/toastSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
 
 export default function CompletePage(){
-  
+
+  const dispatch = useDispatch();
   const { orderId, shippingAdd } = useContext(AppContext);
   const [orderData, setOrderData] = useState({});
-  const navigate = useNavigate();
 
   useEffect(() => {
     getOrderId();
@@ -19,14 +21,12 @@ export default function CompletePage(){
   const getOrderId = async() => {
     try{
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/order/${orderId}`);
-      // console.log(res.data.data.carts);
-      // console.log('getOrderId', Object.values(res.data.order.products));
       setOrderData(res.data.order);
-      setTimeout(() => {
-        navigate("/");
-      }, 5000);
     }catch(err){
-      console.log('getOrderId', err);
+      dispatch(pushMessage({
+        success: false,
+        message: '訂單發生錯誤，請稍後再試。'
+      }))
     }
   };
 
@@ -89,7 +89,7 @@ export default function CompletePage(){
           </div>
 
           <div className="mt-5">
-            <Link href="/" className="btn btn-orange-dark w-100">返回首頁</Link>
+            <Link to="/" className="btn btn-orange-dark w-100">返回首頁</Link>
           </div>
         </div>
       </div>

@@ -1,6 +1,9 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router"
+import { useDispatch } from "react-redux";
+import { pushMessage } from "../redux/toastSlice";
+import ToastComponent from "../components/ToastComponent";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -13,7 +16,9 @@ export default function AdminLogin(){
   });
 
   const [token, setToken] = useState();
+
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const token = document.cookie.replace(
@@ -42,24 +47,30 @@ export default function AdminLogin(){
       setToken(token);
       document.cookie = `hexToken=${token}; expires=${new Date(expired)}`;
       axios.defaults.headers.common['Authorization'] = token;
-      navigate("/admin/product");
+      dispatch(pushMessage(res.data));
+      setTimeout(() => navigate("/admin/product"), 2000); // 延遲跳轉，讓 toast 顯示
     } catch (error) {
-      alert('登入失敗，請確認帳號密碼');
+      dispatch(pushMessage(error.response.data));
     }
   };
 
   const CheckUserLogin = async () => {
     try {
       await axios.post(`${BASE_URL}/v2/api/user/check`);
-      navigate("/admin/product");
+      dispatch(pushMessage({
+        success: true,
+        message: '登入成功'
+      }));
+      setTimeout(() => navigate("/admin/product"), 2000); // 延遲跳轉，讓 toast 顯示
     } catch (error) {
-      alert('驗證失敗，請重新登入');
+      dispatch(pushMessage(error.response.data));
       navigate("/adminLogin");
     }
   };
 
   return(
     <>
+    <ToastComponent />
     <main className="adminlogin">
       <div className="bg">
         <div className="container">

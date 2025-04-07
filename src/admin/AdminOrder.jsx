@@ -2,12 +2,15 @@ import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import { Navigate } from "react-router";
 import { Modal } from "bootstrap";
+import { useDispatch } from "react-redux";
+import { pushMessage } from "../redux/toastSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
 
 export default function AdminOrder(){
 
+  const dispatch = useDispatch();
   const [orders, setOrders] = useState([]);
   const [pagination, setPagination] = useState({});
   
@@ -40,13 +43,8 @@ export default function AdminOrder(){
       getOrder();
     }else{
       Navigate("/adminLogin");
+      return;
     }
-  }, []);
-
-  useEffect(() => {
-    new Modal(orderModalRef.current, {
-      backdrop: false
-    });
   }, []);
 
   const openModal = (order) => {
@@ -63,11 +61,10 @@ export default function AdminOrder(){
   const getOrder = async (page = 1) => {
     try {
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/admin/orders?page=${page}`);
-      // console.log('getOrder', res);
       setOrders(res.data.orders);
       setPagination(res.data.pagination);
     } catch (error) {
-      console.log(error)
+      dispatch(pushMessage(error.response.data));
     }
   };
 
@@ -79,22 +76,21 @@ export default function AdminOrder(){
           is_paid: order_paid
         }
       });
-
-      // console.log('updateOrder', res);
+      dispatch(pushMessage(res.data));
       closeModal();
       getOrder();
     } catch (error) {
-      console.log("更新訂單狀態失敗", error)
+      dispatch(pushMessage(error.response.data));
     }
   };
 
   const delIdOrder = async (order_id) => {
     try {
       const res = await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/admin/order/${order_id}`);
-      // console.log('delIdOrder', res);
+      dispatch(pushMessage(res.data));
       getOrder();
     } catch (error) {
-      console.log(error)
+      dispatch(pushMessage(error.response.data));
     }
   };
 
@@ -103,6 +99,12 @@ export default function AdminOrder(){
     getProduct(page);
   };
 
+  useEffect(() => {
+    new Modal(orderModalRef.current, {
+      backdrop: false
+    });
+  }, []);
+  
   return(
     <>
     <div className="container">
@@ -254,7 +256,7 @@ export default function AdminOrder(){
                 <h6 className="mb-2">訂單內容</h6>
                 <ul className="d-flex flex-column gap-3 p-3 border rounded">
                 {Object.values(selectedOrder.products).map((product) => (
-                  <li key={product.product.id}>{product.product.title} x {product.product.qty}</li>
+                  <li key={product.product.id}>{product.product.title} x {product.qty}</li>
                 ))}
                 </ul>
               </div>
@@ -264,7 +266,7 @@ export default function AdminOrder(){
                 <h6 className="mb-2">訂單狀態</h6>
                 <select 
                   onChange={(e) => setSelectedStatus(e.target.value)}
-                  value={selectedStatus}
+                  value={selectedOrder.status}
                   className="form-select">
                   <option value="" disabled>選擇狀態</option>
                   <option value="未確認">未確認</option>

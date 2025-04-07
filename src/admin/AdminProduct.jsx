@@ -1,7 +1,9 @@
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
-import { Navigate } from "react-router";
+import { useNavigate } from "react-router";
 import { Modal } from "bootstrap";
+import { useDispatch } from "react-redux";
+import { pushMessage } from "../redux/toastSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -33,42 +35,18 @@ const defaultModalState = {
 }
 
 export default function AdminProduct(){
+
   const [allProducts, setAllProducts] = useState([]);
   const [products, setProducts] = useState([]);
   const [pagination, setPagination] = useState({});
+  const [selectCategory, setSelectCategory] = useState("");
 
   const productModalRef = useRef(null);
   const [modalMode, setModalMode] = useState('');
   const [tempProduct, setTempProduct] = useState(defaultModalState);
 
-
-  useEffect(() => {
-    const token = document.cookie.replace(
-      /(?:(?:^|.*;\s*)hexToken\s*\=\s*([^;]*).*$)|^.*$/,
-      "$1"
-    );
-    if(token){
-      axios.defaults.headers.common['Authorization'] = token;
-      getAllProduct();
-      getProduct();
-    }else{
-      Navigate("/adminLogin");
-    }
-  }, []);
-
-  useEffect(() => {
-    new Modal(productModalRef.current, {
-      backdrop: false
-    });
-  }, []);
-
-  // useEffect(() => {
-  //   if (productModalRef.current) {
-  //     new Modal(productModalRef.current, {
-  //       backdrop: false
-  //     });
-  //   }
-  // }, [productModalRef.current]);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const openModal = (mode, product) => {
     setModalMode(mode);
@@ -98,10 +76,9 @@ export default function AdminProduct(){
   const getAllProduct = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/admin/products/all`);
-      // console.log('getAllProduct', res);
       setAllProducts(res.data.products);
     } catch (error) {
-      console.log(error)
+      dispatch(pushMessage(error.response.data));
     }
   };
 
@@ -110,21 +87,35 @@ export default function AdminProduct(){
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/admin/products?page=${page}`);
       setProducts(res.data.products);
       setPagination(res.data.pagination);
-      // console.log('getProduct', res);
     } catch (error) {
-      console.log(error)
-      alert('取得產品失敗');
+      dispatch(pushMessage(error.response.data));
+    }
+  };
+
+  const getCategory = async () => {
+    if (selectCategory !== "全部商品") {
+      try {
+        const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/admin/products`, {
+          params: { category: selectCategory },
+        });
+        setProducts(res.data.products);
+        setPagination(res.data.pagination);
+      } catch (error) {
+        dispatch(pushMessage(error.response.data));
+      }
+    } else {
+      getProduct();
     }
   };
 
   const handlePageChange = (e, page) => {
     e.preventDefault();
     getProduct(page);
-  }
+  };
 
   const editProduct = async (product_id) => {
     try {
-      await axios.put(`${BASE_URL}/v2/api/${API_PATH}/admin/product/${tempProduct.id}`, {
+      const res = await axios.put(`${BASE_URL}/v2/api/${API_PATH}/admin/product/${tempProduct.id}`, {
         data: {
           ...tempProduct,
           origin_price: Number(tempProduct.origin_price),
@@ -133,16 +124,16 @@ export default function AdminProduct(){
           qty: Number(tempProduct.qty)
         }
       });
+      dispatch(pushMessage(res.data));
       closeModal();
     } catch (error) {
-      console.log(error)
-      alert('編輯產品失敗');
+      dispatch(pushMessage(error.response.data));
     }
   };
 
   const createProduct = async () => {
     try {
-      await axios.post(`${BASE_URL}/v2/api/${API_PATH}/admin/product`, {
+      const res = await axios.post(`${BASE_URL}/v2/api/${API_PATH}/admin/product`, {
         data: {
           ...tempProduct,
           origin_price: Number(tempProduct.origin_price),
@@ -150,22 +141,21 @@ export default function AdminProduct(){
           is_enabled: tempProduct.is_enabled ? 1 : 0
         }
       });
+      dispatch(pushMessage(res.data));
       closeModal();
     } catch (error) {
-      alert('新增產品失敗');
-      console.log(error);
+      dispatch(pushMessage(error.response.data));
     }
   };
 
   const deleteProduct = async (product_id) => {
     try {
       const res = await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/admin/product/${product_id}`);
-      // console.log('deleteProduct', res);
+      dispatch(pushMessage(res.data));
       getAllProduct();
       getProduct();
     } catch (error) {
-      console.log(error)
-      alert('更新產品失敗');
+      dispatch(pushMessage(error.response.data));
     }
   };
 
@@ -181,12 +171,9 @@ export default function AdminProduct(){
     const apiCall = modalMode === 'create' ? createProduct : editProduct;
     try {
       await apiCall();
-      closeModal();
-      getAllProduct();
       getProduct();
     } catch (error) {
-      const errorMessage = error.response?.data?.message || '發生未知錯誤';
-      alert(`新增產品失敗: ${errorMessage}`);
+      dispatch(pushMessage(error.response.data));
     }
   };
 
@@ -204,8 +191,45 @@ export default function AdminProduct(){
       })
       fileInput.value = '';
     } catch (error) {
+      dispatch(pushMessage(error.response.data));
     }
-  }
+  };
+
+  const toggleasc = () => {
+    const sortedProducts = [...products].sort((a, b) => a.price - b.price)
+    setProducts(sortedProducts)
+  };
+
+  const toggledesc = () => {
+    const sortedProducts = [...products].sort((a, b) => b.price - a.price)
+    setProducts(sortedProducts)
+  };
+
+  useEffect(() => {
+    const token = document.cookie.replace(
+      /(?:(?:^|.*;\s*)hexToken\s*\=\s*([^;]*).*$)|^.*$/,
+      "$1"
+    );
+    if(token){
+      axios.defaults.headers.common['Authorization'] = token;
+      getAllProduct();
+      getProduct();
+    }else{
+      navigate("/adminLogin");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectCategory) {
+      getCategory();
+    }
+  }, [selectCategory]);
+  
+  useEffect(() => {
+    new Modal(productModalRef.current, {
+      backdrop: false
+    });
+  }, []);
 
   return(
     <>
@@ -225,11 +249,14 @@ export default function AdminProduct(){
           </div>
         </div>
         <div className="col-md-6">
-          <select className="form-select">
+          <select
+            onChange={(e) => setSelectCategory(e.target.value)}
+            value={selectCategory}
+            className="form-select">
             <option disabled>請選擇分類</option>
-            <option key="全部商品">全部商品</option>
+            <option key="全部商品" value="全部商品">全部商品</option>
             {categories.map((category) => (
-              <option key={category}>{category}</option>
+              <option key={category} value={category}>{category}</option>
             ))}
           </select>
         </div>
@@ -253,7 +280,16 @@ export default function AdminProduct(){
         <div className="col-12">
           <div className="product-header fw-bold text-center">
             <span className="product-name">產品名稱</span>
-            <span className="product-price d-none d-md-block">售價</span>
+            {/* 售價 + 排序按鈕 */}
+            <span className="product-price d-none d-md-flex align-items-center justify-content-center">
+              <button className="border-0 bg-transparent" onClick={toggledesc}>
+                ▼
+              </button>
+              售價
+              <button className="border-0 bg-transparent" onClick={toggleasc}>
+                ▲
+              </button>
+            </span>
             <span className="product-qty d-none d-md-block">數量</span>
             <span className="product-status d-none d-md-block">狀態</span>
             <span className="product-action">操作</span>
@@ -474,6 +510,7 @@ export default function AdminProduct(){
                           type="number"
                           className="form-control"
                           placeholder="請輸入數量"
+                          min="0"
                         />
                       </div>
                       <div className="col-6">

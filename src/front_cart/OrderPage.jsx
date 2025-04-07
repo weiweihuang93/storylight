@@ -3,6 +3,8 @@ import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { AppContext } from "../context/AppContext";
+import { useDispatch } from "react-redux";
+import { pushMessage } from "../redux/toastSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -10,6 +12,7 @@ const API_PATH = import.meta.env.VITE_API_PATH;
 export default function OrderPage() {
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const {
     register,
@@ -38,14 +41,19 @@ export default function OrderPage() {
           "code": selectedCoupon
         }
       });
-      console.log('handleCoupon', res);
+      dispatch(pushMessage({
+        success: true,
+        message: '已套用優惠券'
+      }))
       setTotalAfterCoupon(res.data.data); //final_total
-
       // 更新優惠券描述
       const selectCouponData = addcoupons.find(coupon => coupon.code === selectedCoupon);
       setSelectedCouponDescription(selectCouponData ? selectCouponData.description : "");
     }catch(err){
-      console.log(err);
+      dispatch(pushMessage({
+        success: false,
+        message: '使用優惠券發生錯誤，請稍後再試。'
+      }))
     }
   };
 
@@ -56,26 +64,30 @@ export default function OrderPage() {
           "code": "NONE"
         }
       });
-      console.log("handleCoupon-NONE", res);
-      console.log('selectedCoupon', selectedCoupon)
       setSelectedCoupon("")
       setTotalAfterCoupon(null); // 沒有選擇優惠券時，清空折扣金額
       setSelectedCouponDescription(""); // 清除優惠券描述
       getCartData();
     }catch(err){
-      console.log(err);
+      dispatch(pushMessage({
+        success: false,
+        message: '使用優惠券發生錯誤，請稍後再試。'
+      }))
     }
   };
 
   const submitOrder = async (data) => {
     try{
-      const res = await axios.post(`${BASE_URL}/v2/api/${API_PATH}/order`, data)
-      console.log(res);
-      setOrderId(res.data.orderId)
+      const res = await axios.post(`${BASE_URL}/v2/api/${API_PATH}/order`, data);
+      dispatch(pushMessage(res.data));
+      setOrderId(res.data.orderId);
       setCartData([]); //清空購物車資料
       navigate("/cart/payment");
     }catch (error){
-      console.error("訂單提交失敗:", error);
+      dispatch(pushMessage({
+        success: false,
+        message: '提交訂單發生錯誤，請稍後再試。'
+      }))
     }
   };
 

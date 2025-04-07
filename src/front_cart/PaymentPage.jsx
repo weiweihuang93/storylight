@@ -2,6 +2,8 @@ import axios from "axios";
 import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router"
 import { AppContext } from "../context/AppContext";
+import { useDispatch } from "react-redux";
+import { pushMessage } from "../redux/toastSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -9,6 +11,7 @@ const API_PATH = import.meta.env.VITE_API_PATH;
 export default function PaymentPage(){
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   
   const { orderId } = useContext(AppContext);
 
@@ -18,19 +21,20 @@ export default function PaymentPage(){
     const handlePayment = async() => {
       try{
         const res = await axios.post(`${BASE_URL}/v2/api/${API_PATH}/pay/${orderId}`);
-        // console.log('handlePayment', res);
-        navigate("/cart/complete");
+        dispatch(pushMessage(res.data));
+        setTimeout(() => navigate("/cart/complete"), 2000); // 延遲跳轉，讓 toast 顯示
       }catch(err){
-        // console.log(err);
+        dispatch(pushMessage({
+          success: false,
+          message: '訂單付款發生錯誤，請稍後再試。'
+        }))
       }
     }
 
-    const timer = setTimeout(handlePayment, 5000);
+    const timer = setTimeout(handlePayment, 3000);
 
     return () => clearTimeout(timer);
-  }, [orderId, navigate]);
-
-
+  }, [orderId]);
 
   return(
     <>

@@ -1,6 +1,7 @@
 import { useContext, useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { AppContext } from "../context/AppContext";
+import ToastComponent from "../components/ToastComponent";
 
 export default function CartLayout(){
   
@@ -21,8 +22,6 @@ export default function CartLayout(){
     { path: "/cart/complete", title: "訂單完成" },
   ]
 
-  // console.log(location.pathname)
-
   return(
     <>
     <section className="section-progress py-5">
@@ -39,6 +38,7 @@ export default function CartLayout(){
     </section>
 
     <Outlet />
+    <ToastComponent />
     </>
   )
 }

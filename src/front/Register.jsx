@@ -1,9 +1,13 @@
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
+import { useDispatch } from "react-redux";
+import { pushMessage } from "../redux/toastSlice";
+import ToastComponent from "../components/ToastComponent";
 
 export default function Register(){
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const {
     register,
@@ -14,12 +18,16 @@ export default function Register(){
   const onSubmit = () => {
 
     if (!isValid) return;
-    alert("註冊成功");
-    navigate("/login");
+    dispatch(pushMessage({
+      success: true,
+      message: '註冊成功，跳轉登入頁面'
+    }))
+    setTimeout(() => navigate("/login"), 2000); // 延遲跳轉，讓 toast 顯示
   };
 
   return(
     <>
+    <ToastComponent />
     <main className="login">
       <div className="bg">
         <div className="container py-2">
@@ -28,7 +36,7 @@ export default function Register(){
             {/* 左側登入圖片 */}
             <div className="col-lg-6 d-lg-block d-none">
               <div className="login-img p-0 border border-orange-dark rounded">
-                <img className="w-100 h-100" src="https://images.unsplash.com/photo-1576872381149-7847515ce5d8?q=80&w=2672&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="login-img" />
+                <img className="w-100 h-100" src="./images/login-img.png" alt="login-img" />
               </div>
             </div>
 

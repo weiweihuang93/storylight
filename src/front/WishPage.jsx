@@ -1,8 +1,13 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
+import { useDispatch } from "react-redux";
+import { pushMessage } from "../redux/toastSlice";
 
 export default function WishPage() {
+
+  const dispatch = useDispatch();
+  
   const [requests, setRequests] = useState([
     { id: 1, title: "深入淺出 JavaScript", author: "Kyle Simpson", date: "2025/03/26" },
     { id: 2, title: "設計模式解析", author: "Erich Gamma", date: "2025/03/08" },
@@ -23,8 +28,11 @@ export default function WishPage() {
       date: new Date().toLocaleDateString()
     };
     setRequests([...requests, newWish]);
+    dispatch(pushMessage({
+      success: true,
+      message: '您的願望已提交！'
+    }))
     reset();
-    alert("您的願望已提交！");
   };
 
   return (

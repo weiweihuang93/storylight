@@ -181,3 +181,20 @@ a{
     box-shadow: $box-shadow;
   }
 }
+
+// toast
+.toast {
+  opacity: 0;
+  transform: translateY(10px); /* 初始時稍微向下移動 */
+  transition: opacity 0.5s ease, transform 0.5s ease; /* 平滑過渡效果 */
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0); /* 顯示時回到原來的位置 */
+}
+
+.toast.hide {
+  opacity: 0;
+  transform: translateY(10px); /* 隱藏時再向下移動 */
+}

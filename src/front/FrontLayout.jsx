@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { Link, NavLink, Outlet } from "react-router";
 import { AppContext } from "../context/AppContext";
+import ToastComponent from "../components/ToastComponent";
 
 const Routes = [
   // {path: "/", name: "首頁"},
@@ -91,6 +92,8 @@ export default function FrontLayout() {
 
   return (
     <>
+    <ToastComponent />
+    
     <section className="section-promotion bg">
       <h6 className="py-2">✨ 加入 Line 好友領取折扣碼 ✨</h6>
     </section>

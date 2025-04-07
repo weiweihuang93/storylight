@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect } from "react";
-import { Link, NavLink, Outlet } from "react-router";
+import { NavLink, Outlet } from "react-router";
+import ToastComponent from "../components/ToastComponent";
 
 const AdminRoutes = [
   {path: "/admin/order", name: "訂單管理"},
@@ -27,6 +28,8 @@ export default function AdminLayout(){
 
   return(
     <>
+    <ToastComponent />
+
     <main>
       <div className="container py-3">
         <div className="row g-3">

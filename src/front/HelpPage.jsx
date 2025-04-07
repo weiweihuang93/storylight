@@ -1,7 +1,11 @@
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
+import { useDispatch } from "react-redux";
+import { pushMessage } from "../redux/toastSlice";
 
 export default function HelpPage(){
+
+  const dispatch = useDispatch();
 
   const {
     register,
@@ -11,9 +15,11 @@ export default function HelpPage(){
   } = useForm({ mode: "onBlur" });
 
   const onSubmit = (data) => {
+    dispatch(pushMessage({
+      success: true,
+      message: '您的表單已提交！我們將盡快與您聯繫。'
+    }))
     reset();
-    // console.log("表單內容：", data);
-    alert("您的表單已提交！我們將盡快與您聯繫。");
   };
   
   return(
@@ -33,7 +39,7 @@ export default function HelpPage(){
 
       {/* <!-- FAQ --> */}
       <section className="section-faq mb-5">
-        <div className="bg-secondary-500 py-lg-6 p-5 rounded shadow">
+        <div className="bg-secondary-500 py-lg-6 p-3 rounded shadow">
           <div className="container">
             <h2 className="text-center mb-lg-5 mb-4">常見問題</h2>
             <div className="accordion mb-5" id="faqAccordion">

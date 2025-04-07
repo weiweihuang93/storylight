@@ -1,6 +1,9 @@
 import axios from "axios";
 import { useState, useEffect, useContext } from "react";
+import { Link } from "react-router";
 import { AppContext } from "../context/AppContext";
+import { useDispatch } from "react-redux";
+import { pushMessage } from "../redux/toastSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -9,9 +12,10 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
-import { Link } from "react-router";
 
 export default function HomePage(){
+  
+  const dispatch = useDispatch();
   
   const [productsData, setProductsData] = useState([]);
   const [bonusProductsData, setBonusProductsData] = useState([]);
@@ -21,12 +25,14 @@ export default function HomePage(){
   const getAllProduct = async() => {
     try{
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products/all`);
-      console.log('getAllProduct', res.data.products);
       const filterCategoryProducts = res.data.products.filter((item) => item.category !== '運費專區' && item.category !== '滿額索取');
       const filter10Products = filterCategoryProducts.slice(-10);
       setProductsData(filter10Products);
     }catch(error){
-      console.log('getAllProduct: 取得全部產品失敗', error);
+      dispatch(pushMessage({
+        success: false,
+        message: '載入商品資料發生錯誤，請稍後再試。'
+      }))
     }
   };
 
@@ -35,10 +41,12 @@ export default function HomePage(){
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products`, {
         params: { category: '滿額索取'}
       });
-      console.log('getBonusProduct', res);
       setBonusProductsData(res.data.products);
     }catch(error){
-      console.log('getBonusProduct: 取得滿額索取類別產品失敗', error)
+      dispatch(pushMessage({
+        success: false,
+        message: '載入商品資料發生錯誤，請稍後再試。'
+      }))
     }
   };
 
@@ -49,12 +57,11 @@ export default function HomePage(){
 
   return(
     <>
-
     {/* <!-- 輪播圖 --> */}
     <header>
       <div className="container-fluid p-0">
         <div className="header-banner">
-        <img className="header-img" src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2728&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="header-banner" />
+        <img className="header-img" src="./images/banner.png" alt="header-banner" />
         <div className="header-info">
             <h1 className="fs-2 mb-5">讓時光，<br />在舊書的翻閱中靜靜流轉...</h1>
             <h2 className="fs-2 text-md-end text-start">
