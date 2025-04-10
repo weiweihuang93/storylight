@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import { AppContext } from "../context/AppContext";
 import { useDispatch } from "react-redux";
 import { pushMessage } from "../redux/toastSlice";
+import ReactLoading from 'react-loading';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -19,7 +20,7 @@ export default function HomePage(){
   
   const [productsData, setProductsData] = useState([]);
   const [bonusProductsData, setBonusProductsData] = useState([]);
-  const { cartData, addCart, favorites, toggleFavorite } = useContext(AppContext);
+  const { cartData, addCart, favorites, toggleFavorite, loadingId } = useContext(AppContext);
 
   // 取得產品 過濾運費專區和滿額索取
   const getAllProduct = async() => {
@@ -255,13 +256,24 @@ export default function HomePage(){
                 <Link className="btn btn-orange-dark w-100 mb-2" type="button" to={`/category/${product.category}/${product.id}`}>繼續閱讀</Link>
                 <button
                   onClick={() => addCart(product.id)}
-                  className={`btn w-100 mt-auto ${
-                    product.qty === 0 ? "btn-gray-600" : isInCart ? "btn-gray-600" : "btn-warning"
+                  className={`btn mt-auto d-flex justify-content-center align-items-center gap-2 w-100 ${
+                    isInCart || product.qty === 0 ? "btn-gray-600" : "btn-warning"
                   }`}
                   type="button"
-                  disabled={isInCart || product.qty === 0}
+                  disabled={isInCart || product.qty === 0 || loadingId === product.id}
                 >
-                {product.qty === 0 ? "已售完" : isInCart ? "已加入購物車" : "加入購物車"}
+                  {product.qty === 0 ? (
+                    "已售完"
+                  ) : isInCart ? (
+                    "已加入購物車"
+                  ) : loadingId === product.id ? (
+                    <>
+                      加入中...
+                      <ReactLoading type="spin" color="#0d6efd" height="1.5rem" width="1.5rem" />
+                    </>
+                  ) : (
+                    "加入購物車"
+                  )}
                 </button>
 
                 {/* 售完遮罩 */}
@@ -328,13 +340,24 @@ export default function HomePage(){
                 <Link className="btn btn-orange-dark w-100 mb-2" type="button" to={`/category/${product.category}/${product.id}`}>繼續閱讀</Link>
                 <button
                   onClick={() => addCart(product.id)}
-                  className={`btn w-100 mt-auto ${
-                    product.qty === 0 ? "btn-gray-600" : isInCart ? "btn-gray-600" : "btn-warning"
+                  className={`btn mt-auto d-flex justify-content-center align-items-center gap-2 w-100 ${
+                    isInCart || product.qty === 0 ? "btn-gray-600" : "btn-warning"
                   }`}
                   type="button"
-                  disabled={isInCart || product.qty === 0}
+                  disabled={isInCart || product.qty === 0 || loadingId === product.id}
                 >
-                {product.qty === 0 ? "已售完" : isInCart ? "已加入購物車" : "加入購物車"}
+                  {product.qty === 0 ? (
+                    "已售完"
+                  ) : isInCart ? (
+                    "已加入購物車"
+                  ) : loadingId === product.id ? (
+                    <>
+                      加入中...
+                      <ReactLoading type="spin" color="#0d6efd" height="1.5rem" width="1.5rem" />
+                    </>
+                  ) : (
+                    "加入購物車"
+                  )}
                 </button>
 
               {/* 售完遮罩 */}

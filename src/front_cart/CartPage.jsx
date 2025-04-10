@@ -1,9 +1,10 @@
 import axios from "axios";
-import { useEffect, useContext } from "react";
+import { useEffect, useContext, useState } from "react";
 import { useNavigate } from "react-router";
 import { AppContext } from "../context/AppContext";
 import { useDispatch } from "react-redux";
 import { pushMessage } from "../redux/toastSlice";
+import LoadingComponent from "../components/LoadingComponent";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -14,10 +15,12 @@ export default function CartPage(){
   const dispatch = useDispatch();
   
   const { cartData, getCartData, shippingAdd, setShippingAdd } = useContext(AppContext);
+  const [isScreenLoading, setIsScreenLoading] = useState(false);
 
   const delAllCart = async() => {
+    setIsScreenLoading(true);
     try{
-      const res = await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/carts`);
+      await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/carts`);
       dispatch(pushMessage({
         success: true,
         message: '購物車目前沒有商品 ⋟﹏⋞'
@@ -25,21 +28,27 @@ export default function CartPage(){
       getCartData();
     }catch(err){
       dispatch(pushMessage(error.response.data));
+    }finally{
+      setIsScreenLoading(false);
     }
   };
 
   const delIdCart = async(cart_id) => {
+    setIsScreenLoading(true);
     try{
       const res = await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/cart/${cart_id}`);
       dispatch(pushMessage(res.data));
       getCartData();
     }catch(err){
       dispatch(pushMessage(error.response.data));
+    }finally{
+      setIsScreenLoading(false);
     }
   };
 
   // 處理運費商品
   const updateCart = async() => {
+    setIsScreenLoading(true);
     try{
       const res = await axios.post(`${BASE_URL}/v2/api/${API_PATH}/cart`, {
         "data": {
@@ -58,11 +67,14 @@ export default function CartPage(){
         success: false,
         message: '加入運費失敗，請稍後再試。'
       }));
+    }finally{
+      setIsScreenLoading(false);
     }
   };
 
   // 刪除運費商品
   const delShippingIdCart = async(cart_id) => {
+    setIsScreenLoading(true);
     try{
       const res = await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/cart/${cart_id}`);
       dispatch(pushMessage({
@@ -75,6 +87,8 @@ export default function CartPage(){
         success: false,
         message: '刪除運費失敗，請稍後再試。'
       }));
+    }finally{
+      setIsScreenLoading(false);
     }
   };
 
@@ -173,6 +187,8 @@ export default function CartPage(){
           </div>
         </div>
       </div>
+
+      {isScreenLoading && <LoadingComponent />}
     </section>
     </>
   )

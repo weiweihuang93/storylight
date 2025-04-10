@@ -4,6 +4,8 @@ import { Link, NavLink, useParams } from "react-router";
 import { AppContext } from "../context/AppContext";
 import { useDispatch } from "react-redux";
 import { pushMessage } from "../redux/toastSlice";
+import ReactLoading from 'react-loading';
+import LoadingComponent from "../components/LoadingComponent";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -15,10 +17,12 @@ export default function CategoryPage(){
   const dispatch = useDispatch();
   const { categoryName } = useParams();
   const [productsData, setProductsData] = useState([]);
-  const { cartData, addCart, favorites, toggleFavorite } = useContext(AppContext);
+  const { cartData, addCart, favorites, toggleFavorite, loadingId } = useContext(AppContext);
+  const [isScreenLoading, setIsScreenLoading] = useState(false);
 
   // 取得產品 過濾運費專區
   const getAllProduct = async() => {
+    setIsScreenLoading(true);
     try{
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products/all`);
       const filterCategoryProducts = res.data.products.filter((item) => item.category !== '運費專區');
@@ -28,10 +32,13 @@ export default function CategoryPage(){
         success: false,
         message: '載入商品資料發生錯誤，請稍後再試。'
       }))
+    }finally{
+      setIsScreenLoading(false);
     }
   };
 
   const getCategoryProduct = async(category) => {
+    setIsScreenLoading(true);
     try{
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/products`, {
         params: { category },
@@ -42,6 +49,8 @@ export default function CategoryPage(){
         success: false,
         message: '載入商品資料發生錯誤，請稍後再試。'
       }))
+    }finally{
+      setIsScreenLoading(false);
     }
   };
 
@@ -56,6 +65,9 @@ export default function CategoryPage(){
   return(
     <>
     <section className="section-product">
+    {isScreenLoading ? (
+      <LoadingComponent />
+    ):(
       <div className="bg py-3">
         <div className="container">
           <div className="row gy-3">
@@ -147,13 +159,24 @@ export default function CategoryPage(){
                         </ul>
                         <button
                           onClick={() => addCart(product.id)}
-                          className={`btn w-100 mt-auto ${
-                            product.qty === 0 ? "btn-gray-600" : isInCart ? "btn-gray-600" : "btn-warning"
+                          className={`btn mt-auto d-flex justify-content-center align-items-center gap-2 w-100 ${
+                            isInCart || product.qty === 0 ? "btn-gray-600" : "btn-warning"
                           }`}
                           type="button"
-                          disabled={isInCart || product.qty === 0}
+                          disabled={isInCart || product.qty === 0 || loadingId === product.id}
                         >
-                        {product.qty === 0 ? "已售完" : isInCart ? "已加入購物車" : "加入購物車"}
+                          {product.qty === 0 ? (
+                            "已售完"
+                          ) : isInCart ? (
+                            "已加入購物車"
+                          ) : loadingId === product.id ? (
+                            <>
+                              加入中...
+                              <ReactLoading type="spin" color="#0d6efd" height="1.5rem" width="1.5rem" />
+                            </>
+                          ) : (
+                            "加入購物車"
+                          )}
                         </button>
                       </div>
                     </div>
@@ -185,6 +208,7 @@ export default function CategoryPage(){
           </div>
         </div>
       </div>
+    )}
     </section>
     </>
   )

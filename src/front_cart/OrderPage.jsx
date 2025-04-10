@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { AppContext } from "../context/AppContext";
 import { useDispatch } from "react-redux";
 import { pushMessage } from "../redux/toastSlice";
+import LoadingComponent from "../components/LoadingComponent";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -27,6 +28,7 @@ export default function OrderPage() {
   const { setOrderId, cartData, setCartData, getCartData, selectedCoupon, setSelectedCoupon } = useContext(AppContext);
   const [selectedCouponDescription, setSelectedCouponDescription] = useState("");
   const [totalAfterCoupon, setTotalAfterCoupon] = useState("");
+  const [isScreenLoading, setIsScreenLoading] = useState(false);
 
   const addcoupons = [
     { code: "WELCOME", title: "新會員專屬優惠", description: "新會員首次購物可享 70% 折扣" },
@@ -35,6 +37,7 @@ export default function OrderPage() {
   ];
 
   const handleCoupon = async() => {
+    setIsScreenLoading(true);
     try{
       const res = await axios.post(`${BASE_URL}/v2/api/${API_PATH}/coupon`, {
         "data": {
@@ -54,6 +57,8 @@ export default function OrderPage() {
         success: false,
         message: '使用優惠券發生錯誤，請稍後再試。'
       }))
+    }finally{
+      setIsScreenLoading(false);
     }
   };
 
@@ -320,6 +325,8 @@ export default function OrderPage() {
           </div>
         </div>
       </div>
+
+      {isScreenLoading && <LoadingComponent />}
     </section>
     </>
   );

@@ -15,6 +15,7 @@ export default function AppProvider({ children }) {
   const [selectedCoupon, setSelectedCoupon] = useState("");
   const [orderId, setOrderId] = useState(null);
   const [favorites, setFavorites] = useState({});
+  const [loadingId, setLoadingId] = useState(null);
   const dispatch = useDispatch();
   
   // 取得購物車資料
@@ -31,24 +32,24 @@ export default function AppProvider({ children }) {
   }, [setCartData]);
 
   // 加入購物車
-  const addCart = useCallback(async(product_id) => {
-    try{
+  const addCart = useCallback(async (productId) => {
+    setLoadingId(productId);
+    try {
       const res = await axios.post(`${BASE_URL}/v2/api/${API_PATH}/cart`, {
-        "data": {
-          product_id,
-          qty: 1
-        }
+        data: { product_id: productId, qty: 1 }
       });
-      dispatch(pushMessage(res.data))
-      getCartData();
-    }catch(error){
-      dispatch(pushMessage(error.response.data));
+      dispatch(pushMessage(res.data));
+      await getCartData();
+    } catch (err) {
+      dispatch(pushMessage(err.response.data));
+    } finally {
+      setLoadingId(null);
     }
-  }, [getCartData]);
+  }, [cartData]);
 
   useEffect(() => {
     getCartData();
-  }, [getCartData]);
+  }, []);
 
   // 收藏功能
   const toggleFavorite = useCallback((productId) => {
@@ -79,7 +80,8 @@ export default function AppProvider({ children }) {
       shippingAdd, setShippingAdd,
       selectedCoupon, setSelectedCoupon,
       orderId, setOrderId,
-      favorites, toggleFavorite
+      favorites, toggleFavorite,
+      loadingId
       
       }}>
       {children}
