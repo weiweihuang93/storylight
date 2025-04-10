@@ -25,7 +25,7 @@ export default function ToastComponent() {
 
   return (
     <>
-    <section className={`section-toast position-fixed end-0 p-3 ${messages.length === 0 ? 'd-none' : ''}`} style={{ top: '75px', zIndex: 2000 }}>
+    <section className={`section-toast position-fixed end-0 p-3 ${messages.length === 0 ? 'd-none' : ''}`} style={{ top: '115px', zIndex: 2000 }}>
       {messages?.map((message) => (
       <div
         key={message.id}
