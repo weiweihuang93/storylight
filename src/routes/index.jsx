@@ -17,6 +17,7 @@ import AdminOrder from "../admin/AdminOrder";
 import AdminProduct from "../admin/AdminProduct";
 import AdminLogin from "../admin/AdminLogin";
 import NotFound from "../front/NotFound";
+import SearchPage from "../front/SearchPage";
 
 const routes = [
   {
@@ -38,7 +39,8 @@ const routes = [
           { path: 'payment', element: <PaymentPage /> },
           { path: 'complete', element: <CompletePage /> }
         ]
-       }
+       },
+       { path: 'search', element: <SearchPage /> }
     ]
   },
   { path: '/login', element: <Login /> },

@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { Link, NavLink, Outlet } from "react-router";
+import { Link, NavLink, Outlet, useNavigate } from "react-router";
 import { AppContext } from "../context/AppContext";
 import ToastComponent from "../components/ToastComponent";
 
@@ -15,6 +15,8 @@ export default function FrontLayout() {
   const [isMemberbarOpen, setIsMemberbarOpen] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { cartData, shippingAdd, setShippingAdd } = useContext(AppContext);
+  const [search, setSearch] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const isShippingInCart = cartData?.carts?.some((item) => item.product_id === "-OLDh-kx-_pNd2Ls902s");
@@ -90,6 +92,15 @@ export default function FrontLayout() {
     };
   }, []);
 
+  // 搜尋功能
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const trimmedSearch = search.trim()
+    if(trimmedSearch){
+      navigate(`/search?keyword=${trimmedSearch}`);
+    }
+  };
+
   return (
     <>
     <ToastComponent />
@@ -102,16 +113,8 @@ export default function FrontLayout() {
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
           <span className="navbar-toggler-icon"></span>
         </button>
-      <div>
         <Link to="/"><img className="logo" src="./images/logo.png" alt="logo" /></Link>
-      </div>
-      <div className="collapse navbar-collapse justify-content-center" id="navbarCollapse">
-        <form className="form-search d-lg-none d-md-flex m-3" role="search">
-          <input className="input-search form-control form-control-input" type="search" placeholder="搜尋" aria-label="Search" />
-          <a className="a-search" type="button">
-            <span className="material-symbols-outlined"> search </span>
-          </a>
-        </form>
+        <div className="collapse navbar-collapse justify-content-center" id="navbarCollapse">
           <ul className="navbar-nav gap-lg-0 gap-3">
             {Routes.map((route) => (
               <li className="nav-item" key={route.name}>
@@ -129,10 +132,10 @@ export default function FrontLayout() {
               <a href="#"><span className="material-symbols-outlined icon-black searchiconlink"> search </span></a>
             </li>
             <li>
-             <Link to="/cart" className="icon-badge">
+              <Link to="/cart" className="icon-badge">
               <span className="material-symbols-outlined icon-black"> shopping_cart </span>
                 <span className="badge bg-primary">{Math.max((cartData?.carts?.length || 0) - (shippingAdd ? 1 : 0), 0)}</span>
-             </Link>
+              </Link>
             </li>
             <li>
               <Link to="/login"><span className="material-symbols-outlined icon-black"> person </span></Link>
@@ -143,12 +146,17 @@ export default function FrontLayout() {
     </nav>
 
     {/* <!-- 搜尋框 (預設隱藏) --> */}
-    <form className={`form-search m-3 ${isSearchOpen ? "d-block" : "d-none"}`} role="search" >
-      <input className="input-search form-control form-control-input" type="search" placeholder="搜尋" aria-label="Search" />
-      <a className="a-search" type="button" href="#">
-        <span className="material-symbols-outlined"> search </span>
-      </a>
-    </form>
+    <div className="container">
+      <form onSubmit={handleSearchSubmit} className={`form-search m-3 ${isSearchOpen ? "d-block" : "d-none"}`} role="search" >
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="input-search form-control form-control-input" type="search" placeholder="搜尋" aria-label="Search" />
+        <button className="a-search" type="submit">
+          <span className="material-symbols-outlined"> search </span>
+        </button>
+      </form>
+    </div>
 
     <main>
       <Outlet />
