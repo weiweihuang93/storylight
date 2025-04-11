@@ -187,7 +187,7 @@ export default function CategoryPage(){
                         <Link
                           className="btn btn-outline-orange-dark w-100 mt-lg-0 mt-3"
                           type="button"
-                          to={`/category/${categoryName}/${product.id}`}
+                          to={`/category/${product.category}/${product.id}`}
                         >
                           繼續閱讀
                         </Link>
