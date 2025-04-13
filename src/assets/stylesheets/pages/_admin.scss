@@ -59,8 +59,10 @@
   .order-username,
   .order-price,
   .order-paid,
-  .order-status,
-  .order-action{
+  .order-delivery{
     width: 200px;
+  }
+  .order-action{
+    min-width: 100px;
   }
 }
