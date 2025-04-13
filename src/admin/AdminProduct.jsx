@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { Modal } from "bootstrap";
 import { useDispatch } from "react-redux";
 import { pushMessage } from "../redux/toastSlice";
+import LoadingComponent from "../components/LoadingComponent";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -36,15 +37,23 @@ const defaultModalState = {
 
 export default function AdminProduct(){
 
-  const [allProducts, setAllProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState({});
   const [products, setProducts] = useState([]);
   const [pagination, setPagination] = useState({});
-  const [selectCategory, setSelectCategory] = useState("");
+  const [selectCategory, setSelectCategory] = useState('全部商品');
 
   const productModalRef = useRef(null);
   const [modalMode, setModalMode] = useState('');
   const [tempProduct, setTempProduct] = useState(defaultModalState);
 
+  const [search, setSearch] = useState('');
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [filteredCurrentPage, setfilteredCurrentPage] = useState(1);
+  const [filteredTotalPage, setFilteredTotalPage] = useState(1);
+  const itemsPerPage = 10;
+  const [sortOrder, setSortOrder] = useState(""); // '', 'asc', 'desc'
+  const [isScreenLoading, setIsScreenLoading] = useState(false);
+  
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -74,37 +83,27 @@ export default function AdminProduct(){
   };
 
   const getAllProduct = async () => {
+    setIsScreenLoading(true);
     try {
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/admin/products/all`);
       setAllProducts(res.data.products);
     } catch (error) {
       dispatch(pushMessage(error.response.data));
+    }finally{
+      setIsScreenLoading(false);
     }
   };
 
   const getProduct = async (page = 1) => {
+    setIsScreenLoading(true);
     try {
       const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/admin/products?page=${page}`);
       setProducts(res.data.products);
       setPagination(res.data.pagination);
     } catch (error) {
       dispatch(pushMessage(error.response.data));
-    }
-  };
-
-  const getCategory = async () => {
-    if (selectCategory !== "全部商品") {
-      try {
-        const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/admin/products`, {
-          params: { category: selectCategory },
-        });
-        setProducts(res.data.products);
-        setPagination(res.data.pagination);
-      } catch (error) {
-        dispatch(pushMessage(error.response.data));
-      }
-    } else {
-      getProduct();
+    }finally{
+      setIsScreenLoading(false);
     }
   };
 
@@ -171,6 +170,7 @@ export default function AdminProduct(){
     const apiCall = modalMode === 'create' ? createProduct : editProduct;
     try {
       await apiCall();
+      getAllProduct();
       getProduct();
     } catch (error) {
       dispatch(pushMessage(error.response.data));
@@ -195,16 +195,6 @@ export default function AdminProduct(){
     }
   };
 
-  const toggleasc = () => {
-    const sortedProducts = [...products].sort((a, b) => a.price - b.price)
-    setProducts(sortedProducts)
-  };
-
-  const toggledesc = () => {
-    const sortedProducts = [...products].sort((a, b) => b.price - a.price)
-    setProducts(sortedProducts)
-  };
-
   useEffect(() => {
     const token = document.cookie.replace(
       /(?:(?:^|.*;\s*)hexToken\s*\=\s*([^;]*).*$)|^.*$/,
@@ -218,18 +208,47 @@ export default function AdminProduct(){
       navigate("/adminLogin");
     }
   }, []);
-
-  useEffect(() => {
-    if (selectCategory) {
-      getCategory();
-    }
-  }, [selectCategory]);
   
   useEffect(() => {
     new Modal(productModalRef.current, {
       backdrop: false
     });
   }, []);
+
+ // 搜尋 & 分類篩選
+  useEffect(() => {
+    const allItems = Object.values(allProducts);
+    let filtered = [...allItems];
+
+    if (search.trim()) {
+      const keyword = search.trim().toLowerCase();
+      filtered = filtered.filter(product => product.title?.toLowerCase().includes(keyword));
+    }
+
+    if(selectCategory && selectCategory !== "全部商品"){
+      filtered = filtered.filter(product => product.category === selectCategory);
+    }
+
+    // 價格排序
+    if (sortOrder === "asc") {
+      filtered.sort((a, b) => a.price - b.price);
+    } else if (sortOrder === "desc") {
+      filtered.sort((a, b) => b.price - a.price);
+    }
+
+    setFilteredProducts(filtered);
+    setFilteredTotalPage(Math.ceil(filtered.length / itemsPerPage));
+    setfilteredCurrentPage(1);
+  }, [search, selectCategory, allProducts, sortOrder]);
+
+  const handleFilterPageChange = (e, page) => {
+    e.preventDefault();
+    setfilteredCurrentPage(page);
+  };
+
+  const indexOfLastItem = filteredCurrentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentFilteredProducts = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
 
   return(
     <>
@@ -241,9 +260,12 @@ export default function AdminProduct(){
 
         {/* 搜尋 & 分類篩選 */}
         <div className="col-md-6">
-          <div className="d-flex">
-            <input type="text" className="form-control" placeholder="搜尋" />
-            <button className="btn btn-orange px-2 py-0">
+          <div className="form-search d-flex">
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              type="search" className="form-control" placeholder="請輸入書名" />
+            <button type="submit" className="btn px-2 py-0">
               <span className="material-symbols-outlined icon-black"> search </span>
             </button>
           </div>
@@ -264,10 +286,18 @@ export default function AdminProduct(){
         {/* 商品數量 & 新增按鈕 */}
         <div className="col-12">
           <div className="d-flex justify-content-between align-items-center">
-            <p>
-              目前上架數量：
-              <span className="fw-bold text-orange-dark">{allProducts ? Object.keys(allProducts).length : 0}</span>
-            </p>
+            <div className="d-flex gap-3">
+              <p>
+                目前上架數量：
+                <span className="fw-bold text-orange-dark">{allProducts ? Object.keys(allProducts).length : 0}</span>
+              </p>
+
+              <p>
+                篩選後訂單：
+                <span className="fw-bold text-orange-dark">{filteredProducts.length}</span>
+              </p>
+            </div>
+
             <button
               onClick={() => openModal('create')}
               className="btn btn-orange"
@@ -278,15 +308,24 @@ export default function AdminProduct(){
 
         {/* 商品列表 */}
         <div className="col-12">
+          <div className="d-flex justify-content-end mb-2">
+            <button
+              className={`btn btn-sm ${sortOrder === '' ? 'btn-secondary' : 'btn-danger'}`}
+              onClick={() => setSortOrder("")}
+            >
+              清除排序
+            </button>
+          </div>
+
           <div className="product-header fw-bold text-center">
             <span className="product-name">產品名稱</span>
             {/* 售價 + 排序按鈕 */}
             <span className="product-price d-none d-md-flex align-items-center justify-content-center">
-              <button className="border-0 bg-transparent" onClick={toggledesc}>
+              <button className="border-0 bg-transparent" onClick={() => setSortOrder("desc")}>
                 ▼
               </button>
               售價
-              <button className="border-0 bg-transparent" onClick={toggleasc}>
+              <button className="border-0 bg-transparent" onClick={() => setSortOrder("asc")}>
                 ▲
               </button>
             </span>
@@ -296,62 +335,121 @@ export default function AdminProduct(){
           </div>
 
           <div className="product-list">
-            {products.map((product) => (
-              <div className="product-item text-center" key={product.id}>
-                <span className="product-name flex-grow-1">{product.title}</span>
-                <span className="product-price d-none d-md-block">{product.price}</span>
-                <span className="product-qty d-none d-md-block">{product.qty}</span>
-                <span className={`product-status d-none d-md-block ${product.is_enabled ? "text-success fw-bold" : "text-danger fw-bold"}`}>
-                  {product.is_enabled ? "已啟用" : "未啟用"}
-                </span>
-                <span className="product-action">
-                  <div className="d-flex gap-2">
-                    <button onClick={() => openModal('edit', product)} className="btn btn-outline-primary btn-sm">
-                      編輯
-                    </button>
-                    <button onClick={() => deleteProduct(product.id)} className="btn btn-outline-danger btn-sm">
-                      刪除
-                    </button>
+            {search || selectCategory ? (
+              filteredProducts.length > 0 ? (
+                currentFilteredProducts.map((product) => (
+                  <div className="product-item text-center" key={product.id}>
+                    <span className="product-name flex-grow-1">{product.title}</span>
+                    <span className="product-price d-none d-md-block">{product.price}</span>
+                    <span className="product-qty d-none d-md-block">{product.qty}</span>
+                    <span className={`product-status d-none d-md-block ${product.is_enabled ? "text-success fw-bold" : "text-danger fw-bold"}`}>
+                      {product.is_enabled ? "已啟用" : "未啟用"}
+                    </span>
+                    <span className="product-action">
+                      <div className="d-flex gap-2">
+                        <button onClick={() => openModal('edit', product)} className="btn btn-outline-primary btn-sm">
+                          編輯
+                        </button>
+                        <button onClick={() => deleteProduct(product.id)} className="btn btn-outline-danger btn-sm">
+                          刪除
+                        </button>
+                      </div>
+                    </span>
                   </div>
-                </span>
-              </div>
-            ))}
+                ))
+              ) : (
+                <p className="py-3">沒有找到相關商品</p>
+              )
+            ) : (
+              products.map((product) => (
+                <div className="product-item text-center" key={product.id}>
+                  <span className="product-name flex-grow-1">{product.title}</span>
+                  <span className="product-price d-none d-md-block">{product.price}</span>
+                  <span className="product-qty d-none d-md-block">{product.qty}</span>
+                  <span className={`product-status d-none d-md-block ${product.is_enabled ? "text-success fw-bold" : "text-danger fw-bold"}`}>
+                    {product.is_enabled ? "已啟用" : "未啟用"}
+                  </span>
+                  <span className="product-action">
+                    <div className="d-flex gap-2">
+                      <button onClick={() => openModal('edit', product)} className="btn btn-outline-primary btn-sm">
+                        編輯
+                      </button>
+                      <button onClick={() => deleteProduct(product.id)} className="btn btn-outline-danger btn-sm">
+                        刪除
+                      </button>
+                    </div>
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
         {/* 分頁 */}
         <nav className="pagination-container" aria-label="分頁導航">
-          <ul className="pagination">
-            {/* 上一頁按鈕 */}
-            <li className={`page-item ${pagination.has_pre ? '' : 'disabled'}`}>
-              <a 
-                onClick={(e) => handlePageChange(e, pagination.current_page - 1)}
-                className="page-link"
-                href="#">
-                上一頁
-              </a>
-            </li>
-            {/* 頁碼 */}
-            {Array.from({ length: pagination.total_pages }).map((_, index) => (
-              <li key={index} className={`page-item ${pagination.current_page === index + 1 ? 'active' : ''}`}>
-                <a 
-                  onClick={(e) => handlePageChange(e, index + 1)}
-                  className="page-link"
-                  href="#">
-                  {index + 1}
+          {search || selectCategory ? (
+            <ul className="pagination">
+              {/* 上一頁按鈕 */}
+              <li className={`page-item ${filteredCurrentPage === 1 ? 'disabled' : ''}`}>
+                <a
+                  onClick={(e) => handleFilterPageChange(e, filteredCurrentPage - 1)}
+                  className="page-link" href="#">
+                  上一頁
                 </a>
               </li>
-            ))}
-            {/* 下一頁按鈕 */}
-            <li className={`page-item ${pagination.has_next ? '' : 'disabled'}`}>
-              <a
-                onClick={(e) => handlePageChange(e, pagination.current_page + 1)}
-                className="page-link"
-                href="#">
-                下一頁
-              </a>
-            </li>
-          </ul>
+              {/* 頁碼 */}
+              {Array.from({ length: Math.ceil(filteredProducts.length / itemsPerPage)}).map((_, index) => (
+              <li key={index} className={`page-item ${filteredCurrentPage === index + 1 ? 'active' : ''}`}>
+                <a
+                  onClick={(e) => handleFilterPageChange(e, index + 1)}
+                  className="page-link" href="#">
+                  { index + 1 }
+                </a>
+              </li>
+              ))}
+              {/* 下一頁按鈕 */}
+              <li className={`page-item ${filteredCurrentPage === filteredTotalPage ? 'disabled' : ''}`}>
+                <a
+                  onClick={(e) => handleFilterPageChange(e, filteredCurrentPage + 1)}
+                  className="page-link" href="#">
+                  下一頁
+                </a>
+              </li>
+            </ul>
+          ) : (
+            <ul className="pagination">
+              {/* 上一頁按鈕 */}
+              <li className={`page-item ${pagination.has_pre ? '' : 'disabled'}`}>
+                <a 
+                  onClick={(e) => handlePageChange(e, pagination.current_page - 1)}
+                  className="page-link"
+                  href="#">
+                  上一頁
+                </a>
+              </li>
+              {/* 頁碼 */}
+              {Array.from({ length: pagination.total_pages }).map((_, index) => (
+                <li key={index} className={`page-item ${pagination.current_page === index + 1 ? 'active' : ''}`}>
+                  <a 
+                    onClick={(e) => handlePageChange(e, index + 1)}
+                    className="page-link"
+                    href="#">
+                    {index + 1}
+                  </a>
+                </li>
+              ))}
+              {/* 下一頁按鈕 */}
+              <li className={`page-item ${pagination.has_next ? '' : 'disabled'}`}>
+                <a
+                  onClick={(e) => handlePageChange(e, pagination.current_page + 1)}
+                  className="page-link"
+                  href="#">
+                  下一頁
+                </a>
+              </li>
+            </ul>
+          )}
+          
         </nav>
 
         {/* modal */}
@@ -717,8 +815,9 @@ export default function AdminProduct(){
           </div>
         </div>
 
-    </div>
+      </div>
       
+      {isScreenLoading && <LoadingComponent />}
     </div>
     </>
   )
