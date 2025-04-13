@@ -106,7 +106,7 @@ export default function FrontLayout() {
     <ToastComponent />
     
     <section className="section-promotion bg">
-      <h6 className="py-2">✨ 加入 Line 好友領取折扣碼 ✨</h6>
+      <h6 className="py-2">✨ 首次購物可享 70% 折扣 ✨</h6>
     </section>
     <nav className="navbar navbar-expand-lg">
       <div className="container-fluid">
