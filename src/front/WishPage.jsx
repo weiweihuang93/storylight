@@ -1,8 +1,11 @@
+import axios from "axios";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
 import { useDispatch } from "react-redux";
 import { pushMessage } from "../redux/toastSlice";
+
+const GOOGLE_BOOKS_API_KEY = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
 
 export default function WishPage() {
 
@@ -17,6 +20,8 @@ export default function WishPage() {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors, isValid }
   } = useForm({ mode: "onBlur" });
 
@@ -34,6 +39,43 @@ export default function WishPage() {
     }))
     reset();
   };
+
+  const handleFromISBN = async() => {
+    const isbn = watch("isbn");
+    if (!isbn){
+      dispatch(pushMessage({
+        success: false,
+        message: '請先輸入ISBN'
+      }));
+      return;
+    }
+    try{
+      const res = await axios.get(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=${GOOGLE_BOOKS_API_KEY}`)
+      const apiBook = res.data.items?.[0];
+      if (!apiBook){
+        dispatch(pushMessage({
+          success: false,
+          message: '查無資料，請確認 ISBN 是否正確'
+        }));
+      return;
+      }
+
+      setValue('title', apiBook.volumeInfo.title || '');
+      setValue('author', apiBook.volumeInfo.authors[0] || '');
+      setValue('publisher', apiBook.volumeInfo.publisher || '');
+      dispatch(pushMessage({
+        success: true,
+        message: `找到 ${res.data.totalItems} 筆資料，已成功套用`
+      }));
+    
+    }
+    catch(error){
+      dispatch(pushMessage({
+        success: false,
+        message: '搜尋時發生錯誤，請稍後再試'
+      }));
+    }
+  }
 
   return (
     <>
@@ -69,13 +111,22 @@ export default function WishPage() {
               </div>
               <div className="col-md-6">
                 <label htmlFor="isbn" className="form-label fw-bold mb-lg-2 mb-1">ISBN</label>
-                <input
-                  {...register("isbn", { 
-                    required: "請輸入ISBN", 
-                    pattern: { value: /^(97(8|9))?\d{9}(\d|X)$/, message: "請輸入正確的ISBN格式" }
-                  })} 
-                  id="isbn" type="text" className="form-control" placeholder="請輸入ISBN書碼" />
-                  {errors?.isbn && <p className="text-danger my-2">{errors.isbn.message}</p>}
+                <div className="input-group">
+                  <input
+                    {...register("isbn", { 
+                      required: "請輸入ISBN", 
+                      pattern: { value: /^(97(8|9))?\d{9}(\d|X)$/, message: "請輸入正確的ISBN格式" }
+                    })} 
+                    id="isbn" type="text" className="form-control" placeholder="請輸入ISBN書碼" />
+                  <button
+                    className="btn btn-orange"
+                    type="button"
+                    onClick={handleFromISBN}
+                    >
+                    搜尋
+                  </button>
+                </div>
+                {errors?.isbn && <p className="text-danger my-2">{errors.isbn.message}</p>}
               </div>
               <div className="col-md-6">
                 <label htmlFor="author" className="form-label fw-bold mb-lg-2 mb-1">作者</label>

@@ -9,6 +9,8 @@ import LoadingComponent from "../components/LoadingComponent";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
 
+const GOOGLE_BOOKS_API_KEY = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
+
 const categories = ["親子童書", "商業理財", "藝術音樂", "人文科普", "心理勵志", "生活休閒", "文學小說", "工具學習", "滿額索取", "運費專區"];
 
 const defaultModalState = {
@@ -217,7 +219,7 @@ export default function AdminProduct(){
 
  // 搜尋 & 分類篩選
   useEffect(() => {
-    const allItems = Object.values(allProducts);
+    const allItems = Object.values(allProducts).reverse();
     let filtered = [...allItems];
 
     if (search.trim()) {
@@ -249,6 +251,60 @@ export default function AdminProduct(){
   const indexOfLastItem = filteredCurrentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentFilteredProducts = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
+
+
+  const handleFromISBN = async() => {
+    const isbn = tempProduct.isbn;
+    if (!isbn){
+      dispatch(pushMessage({
+        success: false,
+        message: '請先輸入ISBN'
+      }));
+      return;
+    }
+    try{
+      const res = await axios.get(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=${GOOGLE_BOOKS_API_KEY}`)
+
+      // 先判斷是否有回傳書籍
+      if (res.data.totalItems < 1) {
+        dispatch(pushMessage({
+          success: false,
+          message: '查無資料，請確認 ISBN 是否正確'
+        }));
+        return;
+      }
+
+      // 有資料後再進行後續處理
+      dispatch(pushMessage({
+        success: true,
+        message: `找到 ${res.data.totalItems} 筆資料，已成功套用`
+      }));
+      const apiBook = res.data.items?.[0];
+      const apiBookTitle = encodeURIComponent(apiBook.volumeInfo.title || '');
+      const apiBookId = apiBook.id;
+      const googleBookUrl = `https://www.google.com.tw/books/edition/${apiBookTitle}/${apiBookId}?hl=zh-TW&gbpv=0`;
+
+      setTempProduct((prev) => ({
+        ...prev,
+        imageUrl: apiBook.volumeInfo.imageLinks?.thumbnail || prev.imageUrl,
+        title: apiBook.volumeInfo.title || prev.title,
+        content: apiBook.searchInfo?.textSnippet || prev.content,
+        imagesUrl: [""],
+        author: apiBook.volumeInfo?.authors?.[0] || prev.author,
+        publisher: apiBook.volumeInfo.publisher || prev.publisher,
+        publishdate: apiBook.volumeInfo.publishedDate.replace(/-/g, "/") || prev.publishedDate,
+        googleBookUrl,
+        previewLink: apiBook.volumeInfo.previewLink
+        // description: prev.description,
+      }))
+    }
+    catch(error){
+      dispatch(pushMessage({
+        success: false,
+        message: '搜尋時發生錯誤，請稍後再試'
+      }));
+    }
+  }
 
   return(
     <>
@@ -293,7 +349,7 @@ export default function AdminProduct(){
               </p>
 
               <p>
-                篩選後訂單：
+                篩選後數量：
                 <span className="fw-bold text-orange-dark">{filteredProducts.length}</span>
               </p>
             </div>
@@ -547,6 +603,52 @@ export default function AdminProduct(){
                         />
                       </div>
                       <div className="col-12">
+                        <label htmlFor="isbn" className="form-label">
+                          ISBN
+                        </label>
+                        <div className="input-group">
+                          <input
+                            value={tempProduct.isbn}
+                            onChange={handleModalInputChange}
+                            name="isbn"
+                            id="isbn"
+                            type="number"
+                            className="form-control"
+                            placeholder="請輸入ISBN"
+                          />
+                          <button
+                            className="btn btn-secondary"
+                            type="button"
+                            onClick={handleFromISBN}
+                          >
+                            搜尋
+                          </button>
+                        </div>
+
+                          {/* 加在這裡，搜尋成功才顯示 */}
+                          {tempProduct.googleBookUrl && (
+                            <div className="mt-2">
+                              <a
+                                href={tempProduct.googleBookUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-link p-0"
+                              >
+                                🔗 查看此書在 Google 圖書
+                              </a>
+                            </div>
+                          )}
+                        {/* <input
+                          value={tempProduct.isbn}
+                          onChange={handleModalInputChange}
+                          name="isbn"
+                          id="isbn"
+                          type="number"
+                          className="form-control"
+                          placeholder="請輸入ISBN"
+                        /> */}
+                      </div>
+                      <div className="col-12">
                         <label htmlFor="category" className="form-label">
                           分類
                         </label>
@@ -665,20 +767,6 @@ export default function AdminProduct(){
                           type="text"
                           className="form-control"
                           placeholder="請輸入出版日期"
-                        />
-                      </div>
-                      <div className="col-6">
-                        <label htmlFor="isbn" className="form-label">
-                          ISBN
-                        </label>
-                        <input
-                          value={tempProduct.isbn}
-                          onChange={handleModalInputChange}
-                          name="isbn"
-                          id="isbn"
-                          type="number"
-                          className="form-control"
-                          placeholder="請輸入ISBN"
                         />
                       </div>
                       <div className="col-6">
