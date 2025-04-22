@@ -168,6 +168,34 @@ export default function AdminProduct(){
     });
   };
 
+  const handleImageChange = (e, index) => {
+    const { value } = e.target;
+    const newImages = [...tempProduct.imagesUrl];
+    newImages[index] = value;
+
+    setTempProduct({
+      ...tempProduct,
+      imagesUrl: newImages
+    })
+  };
+
+  const handleAddImage = () => {
+    const newImages = [...tempProduct.imagesUrl, ''];
+    setTempProduct({
+      ...tempProduct,
+      imagesUrl: newImages
+    })
+  };
+
+  const handleRemoveImage = () => {
+    const newImages = [...tempProduct.imagesUrl];
+    newImages.pop();
+    setTempProduct({
+      ...tempProduct,
+      imagesUrl: newImages
+    })
+  };
+
   const handleUpdateProduct = async () => {
     const apiCall = modalMode === 'create' ? createProduct : editProduct;
     try {
@@ -570,8 +598,16 @@ export default function AdminProduct(){
                         )}
                       </div>
                     ))}
+
+                    <div className="btn-group w-100">
+                      {tempProduct.imagesUrl.length < 5 && tempProduct.imagesUrl.length[tempProduct.imagesUrl.length - 1] !== "" && 
+                      (<button onClick={handleAddImage} className="btn btn-outline-primary btn-sm w-100">新增圖片</button>)}
+                      {tempProduct.imagesUrl.length > 1 && 
+                      (<button onClick={handleRemoveImage} className="btn btn-outline-danger btn-sm w-100">取消圖片</button>)}
                     </div>
                   </div>
+                </div>
+
                   <div className="col-lg-8">
                     <div className="row g-4">
                       <div className="col-6">
