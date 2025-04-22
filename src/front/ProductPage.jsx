@@ -14,7 +14,7 @@ export default function ProductPage(){
   
   const dispatch = useDispatch();
   const { id } = useParams();
-  const [productsData, setProductsData] = useState([]);
+  const [productData, setProductData] = useState([]);
   const { cartData, addCart, favorites, toggleFavorite, loadingId } = useContext(AppContext);
   const [isScreenLoading, setIsScreenLoading] = useState(false);
 
@@ -23,7 +23,7 @@ export default function ProductPage(){
       setIsScreenLoading(true);
       try{
         const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/product/${id}`)
-        setProductsData(res.data.product);
+        setProductData(res.data.product);
       }catch(err){
         dispatch(pushMessage({
           success: false,
@@ -57,46 +57,63 @@ export default function ProductPage(){
                 <Link to="/category">全部商品</Link>
               </li>
               <li className="breadcrumb-item" aria-current="page">
-                <Link to={`/category/${productsData.category}`}>{productsData.category}</Link>
+                <Link to={`/category/${productData.category}`}>{productData.category}</Link>
               </li>
               <li className="breadcrumb-item active" aria-current="page">
-                {productsData.title}
+                {productData.title}
               </li>
             </ol>
           </nav>
 
           <div className="row">
-            <div className="col-lg-4">
+            <div className="col-lg-6">
               {/* 產品圖片區 */}
-              <div className="product-info h-100">
-                <div className="product-img text-center">
-                  <img src={productsData.imageUrl} alt={productsData.title} />
-                  <button onClick={() => toggleFavorite(productsData.id)} className={`position-absolute border-0 favorite-btn ${favorites[productsData.id] ? 'favorite-active' : ''}`}>
-                    <span className={`material-symbols-outlined ${favorites[productsData.id] ? 'icon-fill' : ''}`}>
+              <div className="product-page-info">
+                <div className="product-page product-img text-center">
+                  <img src={productData.imageUrl} alt={productData.title} />
+                  <button onClick={() => toggleFavorite(productData.id)} className={`position-absolute border-0 favorite-btn ${favorites[productData.id] ? 'favorite-active' : ''}`}>
+                    <span className={`material-symbols-outlined ${favorites[productData.id] ? 'icon-fill' : ''}`}>
                     favorite
                     </span>
                   </button>
-                  <p className="condition-tag">{productsData.condition}</p>
+                  <p className="condition-tag">{productData.condition}</p>
                 </div>
-                <div className="product-price mb-2">
-                  <del className="text-sm me-3">售價：{productsData.origin_price}</del>
+              </div>
+            </div>
+            <div className="col-lg-6">
+              {/* 產品介紹 */}
+              <div className="product-page-info">
+                <h4 className="m-3 mt-lg-0">{productData.title}</h4>
+                <div className="py-3 w-100 h-100 border-top border-bottom">
+                  <ul>
+                    <li className="ps-3 mb-2">ISBN：{productData.isbn}</li>
+                    <li className="ps-3 mb-2">作者：{productData.author}</li>
+                    <li className="ps-3 mb-2">出版社：{productData.publisher}</li>
+                    <li className="ps-3 mb-3">出版日期：{productData.publishdate}</li>
+                    <li className="ps-3 mb-2">適讀對象：{productData.suitable}</li>
+                    <li className="ps-3 mb-2">語言：{productData.language}</li>
+                    <li className="ps-3">規格：{productData.size}</li>
+                  </ul>
+                </div>
+                <div className="py-3 product-price mb-2 d-flex justify-content-center align-items-center">
+                  <del className="text-sm me-3">售價：{productData.origin_price}</del>
                   <p className="fs-5 text-danger fw-bold">
-                    <span className="material-symbols-outlined text-primary me-2">paid</span>{productsData.price}
+                    <span className="material-symbols-outlined text-primary me-2">paid</span>{productData.price}
                   </p>
                 </div>
                 <button
-                  onClick={() => addCart(productsData.id)}
+                  onClick={() => addCart(productData.id)}
                   className={`btn mt-auto d-flex justify-content-center align-items-center gap-2 w-100 ${
-                    isInCart || productsData.qty === 0 ? "btn-gray-600" : "btn-warning"
+                    isInCart || productData.qty === 0 ? "btn-gray-600" : "btn-warning"
                   }`}
                   type="button"
-                  disabled={isInCart || productsData.qty === 0 || loadingId === productsData.id}
+                  disabled={isInCart || productData.qty === 0 || loadingId === productData.id}
                 >
-                {productsData.qty === 0 ? (
+                {productData.qty === 0 ? (
                   "已售完"
                 ) : isInCart ? (
                   "已加入購物車"
-                ) : loadingId === productsData.id ? (
+                ) : loadingId === productData.id ? (
                   <>
                     加入中...
                     <ReactLoading type="spin" color="#0d6efd" height="1.5rem" width="1.5rem" />
@@ -107,16 +124,6 @@ export default function ProductPage(){
                 </button>
               </div>
             </div>
-            <div className="col-lg-8">
-              {/* 產品介紹 */}
-              <div className="product-info h-100">
-                <h5 className="my-3 mt-lg-0">{productsData.title}</h5>
-                <div className="bg-secondary-500 p-3 w-100 h-100">
-                  <p className="text-pre-line">{productsData.content}</p>
-                  <p className="text-pre-line">{productsData.description}</p>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* 商品描述 */}
@@ -124,16 +131,20 @@ export default function ProductPage(){
             <div className="text-center">
               <h5 className="title-decoration mb-5">商品描述</h5>
             </div>
+            <div className="mb-3">
+              <h6 className="text-orange-dark mb-3">商品介紹</h6>
+              <p className="text-pre-line">{productData.description}</p>
+            </div>
             <div className="product-detail mb-3">
               <h6 className="text-orange-dark mb-3">商品細節</h6>
               <ul>
-                <li>ISBN：{productsData.isbn}</li>
-                <li>作者：{productsData.author}</li>
-                <li>出版社：{productsData.publisher}</li>
-                <li>出版日期：{productsData.publishdate}</li>
-                <li>適讀對象：{productsData.suitable}</li>
-                <li>語言：{productsData.language}</li>
-                <li>規格：{productsData.size}</li>
+                <li>ISBN：{productData.isbn}</li>
+                <li>作者：{productData.author}</li>
+                <li>出版社：{productData.publisher}</li>
+                <li>出版日期：{productData.publishdate}</li>
+                <li>適讀對象：{productData.suitable}</li>
+                <li>語言：{productData.language}</li>
+                <li>規格：{productData.size}</li>
               </ul>
             </div>
             <div className="product-condition mb-3">
@@ -149,7 +160,7 @@ export default function ProductPage(){
             <div className="product-condition">
               <h6 className="text-orange-dark mb-3">更多書況說明</h6>
               <ul>
-                <li>{productsData.conditionDescription ? "" : "無"}</li>
+                <li>{productData.conditionDescription ? "" : "無"}</li>
               </ul>
             </div>
           </div>
