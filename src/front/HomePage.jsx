@@ -215,7 +215,7 @@ export default function HomePage(){
         <Swiper
           slidesPerView={1}
           spaceBetween={20}
-          loop={true}
+          loop={productsData.length > 5}
           breakpoints={{
             0: { slidesPerView: 1 },
             576: { slidesPerView: 2 },
@@ -299,7 +299,7 @@ export default function HomePage(){
         <Swiper
           slidesPerView={1}
           spaceBetween={20}
-          loop={true}
+          loop={bonusProductsData.length > 5}
           breakpoints={{
             0: { slidesPerView: 1 },
             576: { slidesPerView: 2 },
