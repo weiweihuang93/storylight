@@ -191,28 +191,6 @@
   }
 }
 
-//
-.product-detail{
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
-
-  ul{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 0.5rem;
-  }
-
-  .product-price{
-    display: flex;
-    align-items: end;
-  }
-}
-//
-
-
 // 加入會員活動
 .section-membership {
   .bg {

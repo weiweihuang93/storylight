@@ -10,6 +10,13 @@ import LoadingComponent from "../components/LoadingComponent";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
 
+import { Swiper, SwiperSlide } from "swiper/react";
+import 'swiper/css';
+import 'swiper/css/free-mode';
+import 'swiper/css/navigation';
+import 'swiper/css/thumbs';
+import { FreeMode, Navigation, Thumbs } from 'swiper/modules';
+
 export default function ProductPage(){
   
   const dispatch = useDispatch();
@@ -17,12 +24,13 @@ export default function ProductPage(){
   const [productData, setProductData] = useState([]);
   const { cartData, addCart, favorites, toggleFavorite, loadingId } = useContext(AppContext);
   const [isScreenLoading, setIsScreenLoading] = useState(false);
+  const [thumbsSwiper, setThumbsSwiper] = useState(null);
 
   useEffect(() => {
     const getProductId = async() => {
       setIsScreenLoading(true);
       try{
-        const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/product/${id}`)
+        const res = await axios.get(`${BASE_URL}/v2/api/${API_PATH}/product/${id}`);
         setProductData(res.data.product);
       }catch(err){
         dispatch(pushMessage({
@@ -65,11 +73,22 @@ export default function ProductPage(){
             </ol>
           </nav>
 
-          <div className="row">
+          <div className="row py-3">
             <div className="col-lg-6">
-              {/* 產品圖片區 */}
-              <div className="product-page-info">
-                <div className="product-page product-img text-center">
+              {/* 主圖區 */}
+              <Swiper
+                style={{
+                  '--swiper-navigation-color': '#A4492C',
+                  '--swiper-pagination-color': '#A4492C',
+                }}
+                spaceBetween={10}
+                navigation={true}
+                thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
+                modules={[FreeMode, Navigation, Thumbs]}
+                className="mySwiper2 main-swiper mb-3"
+              >
+                {productData.imagesUrl && productData.imagesUrl[0] === "" ? (
+                <SwiperSlide key="main-image">
                   <img src={productData.imageUrl} alt={productData.title} />
                   <button onClick={() => toggleFavorite(productData.id)} className={`position-absolute border-0 favorite-btn ${favorites[productData.id] ? 'favorite-active' : ''}`}>
                     <span className={`material-symbols-outlined ${favorites[productData.id] ? 'icon-fill' : ''}`}>
@@ -77,51 +96,99 @@ export default function ProductPage(){
                     </span>
                   </button>
                   <p className="condition-tag">{productData.condition}</p>
-                </div>
-              </div>
+                </SwiperSlide>
+                ) : (
+                  <>
+                  <SwiperSlide key="main">
+                    <img src={productData.imageUrl} alt={productData.title} />
+                    <button onClick={() => toggleFavorite(productData.id)} className={`position-absolute border-0 favorite-btn ${favorites[productData.id] ? 'favorite-active' : ''}`}>
+                    <span className={`material-symbols-outlined ${favorites[productData.id] ? 'icon-fill' : ''}`}>
+                    favorite
+                    </span>
+                  </button>
+                  <p className="condition-tag">{productData.condition}</p>
+                  </SwiperSlide>
+                  {productData.imagesUrl?.map((imageUrl, index) => (
+                    <SwiperSlide key={index}>
+                      <img src={imageUrl} alt={`Product image ${index + 1}`} /> 
+                    </SwiperSlide>
+                  ))}
+                  </>
+                )}
+              </Swiper>
+              {/* 縮圖區 */}
+              <Swiper
+                onSwiper={setThumbsSwiper}
+                spaceBetween={10}
+                slidesPerView={4}
+                freeMode={true}
+                watchSlidesProgress={true}
+                modules={[FreeMode, Navigation, Thumbs]}
+                className="mySwiper thumb-swiper"
+              >
+                {productData.imagesUrl && productData.imagesUrl[0] === "" ? (
+                <SwiperSlide key="main-image">
+                  <img src={productData.imageUrl} alt={productData.title} />
+                </SwiperSlide>
+                ) : (
+                  <>
+                  <SwiperSlide key="main" className="custom-thumbs-slide">
+                    <img src={productData.imageUrl} alt={productData.title} />
+                  </SwiperSlide>
+                  {productData.imagesUrl?.map((imageUrl, index) => (
+                    <SwiperSlide key={index}>
+                      <img src={imageUrl} alt={`Product image ${index + 1}`} /> 
+                    </SwiperSlide>
+                  ))}
+                  </>
+                )}
+              </Swiper>
             </div>
             <div className="col-lg-6">
               {/* 產品介紹 */}
-              <div className="product-page-info">
-                <h4 className="m-3 mt-lg-0">{productData.title}</h4>
-                <div className="py-3 w-100 h-100 border-top border-bottom">
+              <div className="px-3 product-page-info d-flex flex-column justify-content-between h-100">
+                <h4 className="my-3 mt-lg-0">{productData.title}</h4>
+                <p className="product-promotion fw-bold text-orange-dark mb-3">全館滿 1,500 元 免運</p>
+                <div className="py-3 border-top border-bottom">
                   <ul>
-                    <li className="ps-3 mb-2">ISBN：{productData.isbn}</li>
-                    <li className="ps-3 mb-2">作者：{productData.author}</li>
-                    <li className="ps-3 mb-2">出版社：{productData.publisher}</li>
-                    <li className="ps-3 mb-3">出版日期：{productData.publishdate}</li>
-                    <li className="ps-3 mb-2">適讀對象：{productData.suitable}</li>
-                    <li className="ps-3 mb-2">語言：{productData.language}</li>
-                    <li className="ps-3">規格：{productData.size}</li>
+                    <li className="mb-3">ISBN：{productData.isbn}</li>
+                    <li className="mb-3">作者：{productData.author}</li>
+                    <li className="mb-3">出版社：{productData.publisher}</li>
+                    <li className="mb-4">出版日期：{productData.publishdate}</li>
+                    <li className="mb-3">適讀對象：{productData.suitable}</li>
+                    <li className="mb-3">語言：{productData.language}</li>
+                    <li className="">規格：{productData.size}</li>
                   </ul>
                 </div>
-                <div className="py-3 product-price mb-2 d-flex justify-content-center align-items-center">
-                  <del className="text-sm me-3">售價：{productData.origin_price}</del>
-                  <p className="fs-5 text-danger fw-bold">
-                    <span className="material-symbols-outlined text-primary me-2">paid</span>{productData.price}
-                  </p>
+                <div className="d-flex flex-column">
+                  <div className="py-3 product-price mb-2 d-flex justify-content-center align-items-center">
+                    <del className="text-sm me-3">售價：{productData.origin_price}</del>
+                    <p className="fs-5 text-danger fw-bold">
+                      <span className="material-symbols-outlined text-primary me-2">paid</span>{productData.price}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => addCart(productData.id)}
+                    className={`btn mt-auto d-flex justify-content-center align-items-center gap-2 w-100 ${
+                      isInCart || productData.qty === 0 ? "btn-gray-600" : "btn-warning"
+                    }`}
+                    type="button"
+                    disabled={isInCart || productData.qty === 0 || loadingId === productData.id}
+                  >
+                  {productData.qty === 0 ? (
+                    "已售完"
+                  ) : isInCart ? (
+                    "已加入購物車"
+                  ) : loadingId === productData.id ? (
+                    <>
+                      加入中...
+                      <ReactLoading type="spin" color="#0d6efd" height="1.5rem" width="1.5rem" />
+                    </>
+                  ) : (
+                    "加入購物車"
+                  )}
+                  </button>
                 </div>
-                <button
-                  onClick={() => addCart(productData.id)}
-                  className={`btn mt-auto d-flex justify-content-center align-items-center gap-2 w-100 ${
-                    isInCart || productData.qty === 0 ? "btn-gray-600" : "btn-warning"
-                  }`}
-                  type="button"
-                  disabled={isInCart || productData.qty === 0 || loadingId === productData.id}
-                >
-                {productData.qty === 0 ? (
-                  "已售完"
-                ) : isInCart ? (
-                  "已加入購物車"
-                ) : loadingId === productData.id ? (
-                  <>
-                    加入中...
-                    <ReactLoading type="spin" color="#0d6efd" height="1.5rem" width="1.5rem" />
-                  </>
-                ) : (
-                  "加入購物車"
-                )}
-                </button>
               </div>
             </div>
           </div>
